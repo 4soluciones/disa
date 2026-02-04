@@ -1,0 +1,214 @@
+{% extends 'home.html' %}
+{% load static %}
+
+{% block title %}
+    Detalle de Orden de Depósito
+{% endblock title %}
+
+{% block body %}
+    <div class="container-fluid pt-2 roboto-condensed-regular">
+        <!-- Content Header (Page header) -->
+        <div class="content-header">
+            <div class="container-fluid">
+                <div class="row mb-2">
+                    <div class="col-sm-6">
+                        <h1 class="m-0 text-dark">
+                            <i class="fas fa-university mr-2"></i>Detalle de Orden de Depósito
+                        </h1>
+                    </div>
+                    <div class="col-sm-6">
+                        <ol class="breadcrumb float-sm-right">
+                            <li class="breadcrumb-item"><a href="{% url 'home' %}">Inicio</a></li>
+                            <li class="breadcrumb-item"><a href="{% url 'payments:deposit_order_list' %}">Órdenes de Depósito</a></li>
+                            <li class="breadcrumb-item active">Detalle</li>
+                        </ol>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main content -->
+        <div class="content">
+            <div class="container-fluid">
+                <div class="row">
+                    <div class="col-12">
+                        <div class="card">
+                            <div class="card-header">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <h3 class="card-title">
+                                        <i class="fas fa-info-circle mr-2"></i>
+                                        Información del Depósito
+                                    </h3>
+                                    <div class="card-tools">
+                                        <a href="{% url 'payments:deposit_order_pdf' deposit_order.pk %}" class="btn btn-primary">
+                                            <i class="fas fa-file-pdf mr-1"></i>Generar PDF
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="info-box">
+                                            <span class="info-box-icon bg-info">
+                                                <i class="fas fa-hashtag"></i>
+                                            </span>
+                                            <div class="info-box-content">
+                                                <span class="info-box-text">Número de Depósito</span>
+                                                <span class="info-box-number">{{ deposit_order.deposit_number }}</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="info-box">
+                                            <span class="info-box-icon bg-{% if deposit_order.status == 'P' %}warning{% elif deposit_order.status == 'C' %}success{% else %}danger{% endif %}">
+                                                <i class="fas fa-{% if deposit_order.status == 'P' %}clock{% elif deposit_order.status == 'C' %}check{% else %}times{% endif %}"></i>
+                                            </span>
+                                            <div class="info-box-content">
+                                                <span class="info-box-text">Estado</span>
+                                                <span class="info-box-number">{{ deposit_order.get_status_display }}</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="info-box">
+                                            <span class="info-box-icon bg-primary">
+                                                <i class="fas fa-user"></i>
+                                            </span>
+                                            <div class="info-box-content">
+                                                <span class="info-box-text">Depositante</span>
+                                                <span class="info-box-number">{{ deposit_order.depositor_name }}</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="info-box">
+                                            <span class="info-box-icon bg-secondary">
+                                                <i class="fas fa-id-card"></i>
+                                            </span>
+                                            <div class="info-box-content">
+                                                <span class="info-box-text">Documento</span>
+                                                <span class="info-box-number">{{ deposit_order.depositor_document|default:"No especificado" }}</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="info-box">
+                                            <span class="info-box-icon bg-success">
+                                                <i class="fas fa-user-tie"></i>
+                                            </span>
+                                            <div class="info-box-content">
+                                                <span class="info-box-text">Titular de la Cuenta</span>
+                                                <span class="info-box-number">{{ deposit_order.account_holder }}</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="info-box">
+                                            <span class="info-box-icon bg-warning">
+                                                <i class="fas fa-credit-card"></i>
+                                            </span>
+                                            <div class="info-box-content">
+                                                <span class="info-box-text">Número de Cuenta</span>
+                                                <span class="info-box-number">{{ deposit_order.account_number }}</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="info-box">
+                                            <span class="info-box-icon bg-danger">
+                                                <i class="fas fa-dollar-sign"></i>
+                                            </span>
+                                            <div class="info-box-content">
+                                                <span class="info-box-text">Monto</span>
+                                                <span class="info-box-number">S/ {{ deposit_order.amount }}</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="info-box">
+                                            <span class="info-box-icon bg-info">
+                                                <i class="fas fa-building"></i>
+                                            </span>
+                                            <div class="info-box-content">
+                                                <span class="info-box-text">Banco</span>
+                                                <span class="info-box-number">{{ deposit_order.bank|default:"No especificado" }}</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="row">
+                                    <div class="col-md-12">
+                                        <div class="card">
+                                            <div class="card-header">
+                                                <h5 class="card-title">Información Adicional</h5>
+                                            </div>
+                                            <div class="card-body">
+                                                <div class="row">
+                                                    <div class="col-md-6">
+                                                        <p><strong>Nacionalidad:</strong> {{ deposit_order.get_nationality_display|default:"No especificada" }}</p>
+                                                        <p><strong>Observación:</strong> {{ deposit_order.observation }}</p>
+                                                        <p><strong>Sucursal:</strong> {{ deposit_order.subsidiary.name }}</p>
+                                                    </div>
+                                                    <div class="col-md-6">
+                                                        <p><strong>Cajero(a):</strong> {{ deposit_order.user.first_name }} {{ deposit_order.user.last_name }}</p>
+                                                        <p><strong>Fecha de Creación:</strong> {{ deposit_order.created_at|date:"d/m/Y H:i" }}</p>
+                                                        {% if deposit_order.confirmed_at %}
+                                                            <p><strong>Confirmado por:</strong> {{ deposit_order.confirmed_by.first_name }} {{ deposit_order.confirmed_by.last_name }}</p>
+                                                            <p><strong>Fecha de Confirmación:</strong> {{ deposit_order.confirmed_at|date:"d/m/Y H:i" }}</p>
+                                                        {% endif %}
+                                                    </div>
+                                                </div>
+                                                
+                                                {% if deposit_order.amount_in_words %}
+                                                    <div class="row">
+                                                        <div class="col-md-12">
+                                                            <div class="alert alert-info">
+                                                                <h6><i class="fas fa-file-text mr-2"></i>Monto en Letras</h6>
+                                                                <p class="mb-0"><strong>{{ deposit_order.amount_in_words }}</strong></p>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="card-footer">
+                                <div class="row">
+                                    <div class="col-12">
+                                        <div class="float-right">
+                                            <a href="{% url 'payments:deposit_order_list' %}" class="btn btn-secondary mr-2">
+                                                <i class="fas fa-arrow-left mr-1"></i>Volver
+                                            </a>
+                                            {% if deposit_order.status == 'P' %}
+                                                <a href="{% url 'payments:deposit_order_edit' deposit_order.pk %}" class="btn btn-warning mr-2">
+                                                    <i class="fas fa-edit mr-1"></i>Editar
+                                                </a>
+                                                <a href="{% url 'payments:deposit_order_confirm' deposit_order.pk %}" class="btn btn-success">
+                                                    <i class="fas fa-check mr-1"></i>Confirmar
+                                                </a>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock body %}

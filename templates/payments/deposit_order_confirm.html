@@ -1,0 +1,184 @@
+{% extends 'home.html' %}
+{% load static %}
+
+{% block title %}
+    Confirmar Depósito
+{% endblock title %}
+
+{% block body %}
+    <div class="container-fluid pt-2 roboto-condensed-regular">
+        <!-- Content Header (Page header) -->
+        <div class="content-header">
+            <div class="container-fluid">
+                <div class="row mb-2">
+                    <div class="col-sm-6">
+                        <h1 class="m-0 text-dark">
+                            <i class="fas fa-check-circle mr-2"></i>Confirmar Depósito
+                        </h1>
+                    </div>
+                    <div class="col-sm-6">
+                        <ol class="breadcrumb float-sm-right">
+                            <li class="breadcrumb-item"><a href="{% url 'home' %}">Inicio</a></li>
+                            <li class="breadcrumb-item"><a href="{% url 'payments:deposit_order_list' %}">Órdenes de Depósito</a></li>
+                            <li class="breadcrumb-item active">Confirmar</li>
+                        </ol>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main content -->
+        <div class="content">
+            <div class="container-fluid">
+                <div class="row">
+                    <div class="col-12">
+                        <div class="card">
+                            <div class="card-header">
+                                <h3 class="card-title">
+                                    <i class="fas fa-info-circle mr-2"></i>
+                                    Información del Depósito a Confirmar
+                                </h3>
+                            </div>
+                            <div class="card-body">
+                                <div class="alert alert-warning">
+                                    <h5><i class="fas fa-exclamation-triangle mr-2"></i>Confirmación de Depósito</h5>
+                                    <p>Está a punto de confirmar el depósito <strong>{{ deposit_order.deposit_number }}</strong>. 
+                                    Esta acción marcará el depósito como completado y no se podrá deshacer.</p>
+                                </div>
+                                
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="info-box">
+                                            <span class="info-box-icon bg-info">
+                                                <i class="fas fa-hashtag"></i>
+                                            </span>
+                                            <div class="info-box-content">
+                                                <span class="info-box-text">Número de Depósito</span>
+                                                <span class="info-box-number">{{ deposit_order.deposit_number }}</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="info-box">
+                                            <span class="info-box-icon bg-primary">
+                                                <i class="fas fa-user"></i>
+                                            </span>
+                                            <div class="info-box-content">
+                                                <span class="info-box-text">Depositante</span>
+                                                <span class="info-box-number">{{ deposit_order.depositor_name }}</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="info-box">
+                                            <span class="info-box-icon bg-success">
+                                                <i class="fas fa-user-tie"></i>
+                                            </span>
+                                            <div class="info-box-content">
+                                                <span class="info-box-text">Titular de la Cuenta</span>
+                                                <span class="info-box-number">{{ deposit_order.account_holder }}</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="info-box">
+                                            <span class="info-box-icon bg-danger">
+                                                <i class="fas fa-dollar-sign"></i>
+                                            </span>
+                                            <div class="info-box-content">
+                                                <span class="info-box-text">Monto</span>
+                                                <span class="info-box-number">S/ {{ deposit_order.amount }}</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="row">
+                                    <div class="col-md-12">
+                                        <div class="card">
+                                            <div class="card-header">
+                                                <h5 class="card-title">Detalles del Depósito</h5>
+                                            </div>
+                                            <div class="card-body">
+                                                <div class="row">
+                                                    <div class="col-md-6">
+                                                        <p><strong>Número de Cuenta:</strong> {{ deposit_order.account_number }}</p>
+                                                        <p><strong>Banco:</strong> {{ deposit_order.bank|default:"No especificado" }}</p>
+                                                        <p><strong>Nacionalidad:</strong> {{ deposit_order.get_nationality_display|default:"No especificada" }}</p>
+                                                    </div>
+                                                    <div class="col-md-6">
+                                                        <p><strong>Documento:</strong> {{ deposit_order.depositor_document|default:"No especificado" }}</p>
+                                                        <p><strong>Sucursal:</strong> {{ deposit_order.subsidiary.name }}</p>
+                                                        <p><strong>Fecha de Creación:</strong> {{ deposit_order.created_at|date:"d/m/Y H:i" }}</p>
+                                                    </div>
+                                                </div>
+                                                
+                                                {% if deposit_order.amount_in_words %}
+                                                    <div class="row">
+                                                        <div class="col-md-12">
+                                                            <div class="alert alert-info">
+                                                                <h6><i class="fas fa-file-text mr-2"></i>Monto en Letras</h6>
+                                                                <p class="mb-0"><strong>{{ deposit_order.amount_in_words }}</strong></p>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Formulario de confirmación -->
+                        <div class="card">
+                            <div class="card-header">
+                                <h3 class="card-title">
+                                    <i class="fas fa-check mr-2"></i>
+                                    Confirmar Depósito
+                                </h3>
+                            </div>
+                            <form method="post">
+                                {% csrf_token %}
+                                <div class="card-body">
+                                    <div class="form-group">
+                                        <label for="{{ form.observation.id_for_label }}">{{ form.observation.label }}</label>
+                                        {{ form.observation }}
+                                        {% if form.observation.errors %}
+                                            <div class="text-danger">
+                                                {% for error in form.observation.errors %}
+                                                    <small>{{ error }}</small>
+                                                {% endfor %}
+                                            </div>
+                                        {% endif %}
+                                        <small class="form-text text-muted">
+                                            Agregue cualquier observación adicional sobre la confirmación del depósito.
+                                        </small>
+                                    </div>
+                                </div>
+                                
+                                <div class="card-footer">
+                                    <div class="row">
+                                        <div class="col-12">
+                                            <div class="float-right">
+                                                <a href="{% url 'payments:deposit_order_detail' deposit_order.pk %}" class="btn btn-secondary mr-2">
+                                                    <i class="fas fa-times mr-1"></i>Cancelar
+                                                </a>
+                                                <button type="submit" class="btn btn-success">
+                                                    <i class="fas fa-check mr-1"></i>Confirmar Depósito
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock body %}

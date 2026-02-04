@@ -1,0 +1,1067 @@
+<div class="modal-dialog modal-xl roboto-condensed-regular" role="document">
+    <div class="modal-content">
+        <div class="modal-header bg-primary text-white">
+            <h5 class="modal-title">
+                <i class="fas fa-plus-circle mr-2"></i><span id="modal-title-text">Nueva Transacción</span>
+            </h5>
+            <button type="button" class="close text-white" data-dismiss="modal">
+                <span>&times;</span>
+            </button>
+        </div>
+        <div class="modal-body">
+            <form id="deposit-form">
+                {% csrf_token %}
+                <input type="hidden" id="deposit_id" name="deposit_id" value="">
+                <!-- Información de Numeración -->
+                <div class="row mb-1">
+                    <div class="col-12">
+                        <div class="card border-primary mb-2">
+                            <div class="card-header bg-light">
+                                <h6 class="mb-0 text-primary">
+                                    <i class="fas fa-hashtag mr-2"></i>Información de Numeración
+                                </h6>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-4">
+                                        <div class="form-group mb-0">
+                                            <label for="type_deposit" class="form-label">
+                                                <i class="fas fa-tags mr-1"></i>Tipo de Orden <span
+                                                    class="text-danger">*</span>
+                                            </label>
+                                            <select class="form-control" id="type_deposit" name="type_deposit"
+                                                    required onchange="updateSerialDeposit()">
+                                                <option value="DEP">DEPÓSITO</option>
+                                                <option value="PAG">PAGO</option>
+                                                <option value="LET">LETRA</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="form-group mb-0">
+                                            <label class="form-label">
+                                                <i class="fas fa-barcode mr-1"></i>Serie Generada
+                                            </label>
+                                            <div class="input-group">
+                                                <input type="text" class="form-control" id="serial_display"
+                                                       readonly
+                                                       placeholder="Se generará automáticamente">
+                                                <div class="input-group-append">
+                                                    <button type="button" class="btn btn-outline-info"
+                                                            onclick="updateSerial()" title="Actualizar serie">
+                                                        <i class="fas fa-sync-alt"></i>
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="form-group mb-0">
+                                            <label class="form-label">
+                                                <i class="fas fa-sort-numeric-up mr-1"></i>Correlativo
+                                            </label>
+                                            <input type="text" class="form-control" id="correlative_display"
+                                                   readonly
+                                                   placeholder="Se generará automáticamente">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Información del Cliente -->
+                <div class="row mb-1" style="position: relative; z-index: 2;">
+                    <div class="col-12">
+                        <div class="card border-success">
+                            <div class="card-header bg-light">
+                                <h6 class="mb-0 text-success">
+                                    <i class="fas fa-user-circle mr-2"></i>Información del Cliente
+                                </h6>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-8">
+                                        <div class="form-group mb-0">
+                                            <label for="depositor_client_id" class="form-label">
+                                                Cliente Depositante <span class="text-danger">*</span>
+                                            </label>
+                                            <div class="input-group position-relative">
+                                                <input type="text" class="form-control"
+                                                       id="depositor_client_search_input"
+                                                       placeholder="Escriba para buscar cliente..." autocomplete="off">
+                                                <div class="input-group-append">
+                                                    <button type="button" class="btn btn-outline-primary btn-open-client btn-sm"
+                                                            onclick="openCreateClientModal()"
+                                                            title="Crear nuevo cliente">
+                                                        <i class="fas fa-plus"></i>
+                                                    </button>
+                                                    <button type="button"
+                                                            class="btn btn-outline-secondary btn-clear-client btn-sm"
+                                                            onclick="clearClientSelection()"
+                                                            title="Limpiar cliente seleccionado" style="display: none;">
+                                                        <i class="fas fa-times"></i>
+                                                    </button>
+                                                </div>
+                                                <input type="hidden" id="depositor_client_id" name="depositor_client_id"
+                                                       required>
+                                                <div id="depositor_client_autocomplete_results"
+                                                     class="client-autocomplete-results"
+                                                     style="display: none;"></div>
+                                            </div>
+                                            <small class="form-text text-muted">
+                                                <i class="fas fa-info-circle mr-1 ml-2"></i>
+                                                Escriba el nombre o documento del cliente para buscar rápidamente
+                                            </small>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="form-group mb-0">
+                                            <label for="depositor_client_phone" class="form-label">
+                                                <i class="fas fa-phone mr-1"></i>Teléfono
+                                            </label>
+                                            <input type="text" class="form-control"
+                                                   id="depositor_client_phone"
+                                                   name="depositor_client_phone"
+                                                   placeholder="El teléfono se cargará automáticamente al seleccionar un cliente"
+                                                   autocomplete="off">
+                                            <small class="form-text text-muted">
+                                                <i class="fas fa-info-circle mr-1 ml-2"></i>
+                                                Puede editar el teléfono. Se guardará al crear el depósito.
+                                            </small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Información Bancaria -->
+                <div class="row mb-1">
+                    <div class="col-12">
+                        <div class="card border-info">
+                            <div class="card-header bg-light">
+                                <h6 class="mb-0 text-info">
+                                    <i class="fas fa-university mr-2"></i>Información Bancaria
+                                </h6>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="form-group mb-3">
+                                            <label for="destination_entity" class="form-label">
+                                                Entidad de Destino <span class="text-danger">*</span>
+                                            </label>
+                                            <select class="form-control" id="destination_entity"
+                                                    name="destination_entity" required>
+                                                <option value="">Seleccione entidad</option>
+                                                {% for entity in destination_entities %}
+                                                    <option value="{{ entity.id }}">{{ entity.name|upper }}
+                                                    </option>
+                                                {% endfor %}
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-group mb-3">
+                                            <label for="account_holder" class="form-label">
+                                                Titular Receptor <span class="text-danger">*</span>
+                                            </label>
+                                            <input type="text" class="form-control" id="account_holder"
+                                                   name="account_holder"
+                                                   placeholder="Nombre del titular receptor" required>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="form-group mb-0">
+                                            <label for="account_number" class="form-label">
+                                                Número de Operación/Prestamo/Cuenta <span class="text-danger">*</span>
+                                            </label>
+                                            <input type="text" class="form-control" id="account_number"
+                                                   name="account_number"
+                                                   placeholder=" " required>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-2">
+                                        <div class="form-group mb-0">
+                                            <label for="amount" class="form-label">
+                                                Monto <span class="text-danger">*</span>
+                                            </label>
+                                            <div class="input-group">
+                                                <div class="input-group-prepend">
+                                                    <span class="input-group-text">S/</span>
+                                                </div>
+                                                <input type="number" class="form-control text-right" id="amount"
+                                                       name="amount"
+                                                       step="0.01" min="0.01" placeholder="0.00" required>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-2">
+                                        <div class="form-group mb-0">
+                                            <label for="commission" class="form-label">
+                                                Comisión
+                                            </label>
+                                            <div class="input-group">
+                                                <div class="input-group-prepend">
+                                                    <span class="input-group-text">S/</span>
+                                                </div>
+                                                <input type="number" class="form-control text-right" id="commission"
+                                                       name="commission"
+                                                       step="0.01" min="0" placeholder="0.00" readonly>
+                                            </div>
+                                            <small class="form-text text-muted">
+                                                <i class="fas fa-percent mr-1"></i>
+                                                2% del monto
+                                            </small>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-2">
+                                        <div class="form-group mb-0">
+                                            <label for="amount_with_commission" class="form-label">
+                                                Monto con Comisión
+                                            </label>
+                                            <div class="input-group">
+                                                <div class="input-group-prepend">
+                                                    <span class="input-group-text">S/</span>
+                                                </div>
+                                                <input type="number" class="form-control text-right" id="amount_with_commission"
+                                                       name="amount_with_commission"
+                                                       step="0.01" min="0" placeholder="0.00" readonly>
+                                            </div>
+                                            <small class="form-text text-muted">
+                                                <i class="fas fa-info-circle mr-1"></i>
+                                                Monto + Comisión
+                                            </small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Información de Sucursales -->
+                <div class="row mb-1">
+                    <div class="col-12">
+                        <div class="card border-warning mb-2">
+                            <div class="card-header bg-light">
+                                <h6 class="mb-0 text-warning">
+                                    <i class="fas fa-building mr-2"></i>Información de Sucursales
+                                </h6>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="form-group mb-0">
+                                            <label for="origin_subsidiary_id" class="form-label">
+                                                Sucursal de Origen <span class="text-danger">*</span>
+                                            </label>
+                                            <input type="text" class="form-control" id="origin_subsidiary_display"
+                                                   value="{% if user.subsidiary %}{{ user.subsidiary.name }}{% else %}Sin sucursal asignada{% endif %}"
+                                                   readonly>
+                                            <input type="hidden" id="origin_subsidiary_id" name="origin_subsidiary_id"
+                                                   value="{% if user.subsidiary %}{{ user.subsidiary.id }}{% endif %}" required>
+                                            <small class="form-text text-muted">
+                                                <i class="fas fa-info-circle mr-1"></i>
+                                                Sucursal asignada al usuario actual
+                                            </small>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-group mb-0">
+                                            <label for="subsidiary_encargada_id" class="form-label">
+                                                Sucursal Encargada <span class="text-danger">*</span>
+                                            </label>
+                                            <select class="form-control" id="subsidiary_encargada_id"
+                                                    name="subsidiary_encargada_id" required>
+                                                <option value="">Seleccione sucursal</option>
+                                                {% for subsidiary in subsidiary_set %}
+                                                    {% if user.subsidiary.id != subsidiary.id %}
+                                                        <option value="{{ subsidiary.id }}">{{ subsidiary.name }}</option>
+                                                    {% endif %}
+                                                {% endfor %}
+                                            </select>
+                                            <small class="form-text text-muted">
+                                                <i class="fas fa-info-circle mr-1"></i>
+                                                La sucursal de origen no puede ser seleccionada como sucursal encargada
+                                            </small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Observación -->
+                <div class="row mb-3">
+                    <div class="col-12">
+                        <div class="form-group mb-0">
+                            <label for="observation" class="form-label">
+                                <i class="fas fa-comment mr-1"></i>Observación
+                            </label>
+                            <input type="text" class="form-control" id="observation" name="observation"
+                                   value="" placeholder="Observación" autocomplete="off">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Información del Sistema -->
+                <div class="row">
+                    <div class="col-12">
+                        <div class="alert alert-info mb-0">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <strong><i
+                                            class="fas fa-user mr-1"></i>Usuario:</strong> {{ user.first_name }} {{ user.last_name }}
+                                </div>
+                                <div class="col-md-6">
+                                    <strong><i class="fas fa-calendar mr-1"></i>Fecha:</strong> <span
+                                        id="current-date">{{ my_date|date:'d/m/Y H:i' }}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Alerta de apertura de caja -->
+                <div class="row mt-2">
+                    <div class="col-12">
+                        <div class="alert alert-warning mb-0">
+                            <i class="fas fa-exclamation-triangle mr-2"></i>
+                            <strong>Importante:</strong> Antes de crear una orden de depósito, asegúrese de que la caja del día esté abierta en la sucursal de origen. 
+                            Puede abrir la caja desde el módulo de Gestión de Gastos y Flujo de Caja.
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-dismiss="modal">
+                <i class="fas fa-times mr-1"></i>Cancelar
+            </button>
+            <button type="button" class="btn btn-primary" onclick="saveDeposit()">
+                <i class="fas fa-save mr-1"></i><span id="save-button-text">Guardar Depósito</span>
+            </button>
+        </div>
+    </div>
+</div>
+
+
+<!-- Modal para crear nuevo cliente -->
+<div class="modal fade" id="createClientModal" tabindex="-1" role="dialog">
+    <div class="modal-dialog modal-md roboto-condensed-regular" role="document">
+        <div class="modal-content">
+            <div class="modal-header bg-info text-white">
+                <h5 class="modal-title">
+                    <i class="fas fa-user-plus mr-2"></i>Nuevo Cliente
+                </h5>
+                <button type="button" class="close text-white" data-dismiss="modal">
+                    <span>&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form id="create-client-form">
+                    {% csrf_token %}
+                    <div class="form-group">
+                        <label for="new_client_document" class="form-label">
+                            <i class="fas fa-id-card mr-1"></i>Tipo de Documento
+                        </label>
+                        <select class="form-control" id="new_client_document" name="document">
+                            <option value="">Sin documento</option>
+                            <option value="01">DNI</option>
+                            <option value="06">RUC</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="new_client_number" class="form-label">
+                            <i class="fas fa-hashtag mr-1"></i>Número de Documento
+                        </label>
+                        <div class="input-group">
+                            <input type="text" class="form-control" id="new_client_number" name="number"
+                                   placeholder="Opcional" autocomplete="off">
+                            <div class="input-group-append">
+                                <button type="button" class="btn btn-outline-primary" onclick="searchClientInAPI()"
+                                        title="Buscar en sistema externo">
+                                    <i class="fas fa-search"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="new_client_name" class="form-label">
+                            <i class="fas fa-user mr-1"></i>Nombre Completo <span class="text-danger">*</span>
+                        </label>
+                        <input type="text" class="form-control" id="new_client_name" name="full_name"
+                               placeholder="Nombre completo del cliente" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="new_client_phone" class="form-label">
+                            <i class="fas fa-phone mr-1"></i>Teléfono
+                        </label>
+                        <input type="text" class="form-control" id="new_client_phone" name="phone"
+                               placeholder="Número de teléfono">
+                    </div>
+                    <div class="form-group">
+                        <label for="new_client_email" class="form-label">
+                            <i class="fas fa-envelope mr-1"></i>Email
+                        </label>
+                        <input type="email" class="form-control" id="new_client_email" name="email"
+                               placeholder="Correo electrónico">
+                    </div>
+                    <div class="form-group">
+                        <label for="new_client_address" class="form-label">
+                            <i class="fas fa-map-marker-alt mr-1"></i>Dirección
+                        </label>
+                        <textarea class="form-control" id="new_client_address" name="address" rows="2"
+                                  placeholder="Dirección del cliente"></textarea>
+                    </div>
+
+                    <!-- Indicador de cliente listo para seleccionar -->
+                    <div id="client-ready-indicator" class="alert alert-success" style="display: none;">
+                        <i class="fas fa-check-circle mr-1"></i>
+                        <strong>Cliente listo:</strong> <span id="ready-client-name"></span>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" onclick="$('#createClientModal').modal('hide')">
+                    <i class="fas fa-times mr-1"></i>Cancelar
+                </button>
+                <button type="button" class="btn btn-info" onclick="saveNewClient()">
+                    <i class="fas fa-save mr-1"></i>Guardar Cliente
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+<style>
+    .modal {
+        z-index: 1050;
+    }
+
+    .modal-backdrop {
+        z-index: 1040;
+    }
+
+    .modal.show {
+        z-index: 1060 !important;
+    }
+
+    /* Estilos para autocompletar */
+    .client-autocomplete-results {
+        position: absolute;
+        z-index: 1070;
+        left: 0;
+        right: 0;
+        background: #fff;
+        border: 1px solid #e2e2e2;
+        border-radius: .25rem;
+        max-height: 260px;
+        overflow: auto;
+        box-shadow: 0 6px 18px rgba(0,0,0,0.08);
+    }
+
+    .client-suggestion-item {
+        padding: .6rem .8rem;
+        cursor: pointer;
+        border-bottom: 1px solid #f1f1f1;
+    }
+
+    .client-suggestion-item:last-child { border-bottom: none; }
+
+    .client-suggestion-item:hover,
+    .client-suggestion-item.active {
+        background-color: #f0f7fb;
+    }
+
+</style>
+
+<script>
+
+    // Función para calcular el monto con comisión (monto + 2%)
+    function calculateAmountWithCommission() {
+        const amount = parseFloat($('#amount').val()) || 0;
+        if (amount > 0) {
+            const commission = amount * 0.02; // 2% de comisión
+            const amountWithCommission = amount + commission;
+            // Mostrar la comisión en su campo
+            $('#commission').val(commission.toFixed(2));
+            // Mostrar el monto con comisión
+            $('#amount_with_commission').val(amountWithCommission.toFixed(2));
+        } else {
+            $('#commission').val('');
+            $('#amount_with_commission').val('');
+        }
+    }
+
+    // Calcular monto con comisión cuando cambie el campo de monto
+    $('#amount').on('input change', function () {
+        calculateAmountWithCommission();
+    });
+
+    $('#depositor_client_search_input').on('input', function () {
+        const searchTerm = $(this).val();
+        if (searchTerm.length >= 2) {
+            if (searchTerm.length < 2) {
+                $('#depositor_client_autocomplete_results').hide();
+                return;
+            }
+            $.ajax({
+                url: '/payments/search_clients_autocomplete/',
+                type: 'GET',
+                data: {
+                    'search': searchTerm
+                },
+                success: function (response) {
+                    if (response.success && response.clients.length > 0) {
+                        let html = '';
+                        response.clients.forEach(client => {
+                            const documentType = client.document === '01' ? 'DNI' :
+                                client.document === '06' ? 'RUC' : 'S/D';
+                            const clientPhone = client.phone || '';
+                            // Escapar comillas simples para evitar errores en JavaScript
+                            const escapedName = client.full_name.replace(/'/g, "\\'");
+                            const escapedPhone = clientPhone.replace(/'/g, "\\'");
+                            // Render item with data attributes for keyboard selection
+                            html += `
+                                <div class="client-suggestion-item" data-client-id="${client.id}"
+                                     data-client-name="${escapedName}"
+                                     data-client-document="${documentType}: ${client.number}"
+                                     data-client-phone="${escapedPhone}">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div>
+                                            <strong class="text-primary">${client.full_name}</strong>
+                                            <br><small class="text-muted">${documentType}: ${client.number}</small>
+                                            ${client.phone ? `<br><small class="text-muted"><i class="fas fa-phone mr-1"></i>${client.phone}</small>` : ''}
+                                        </div>
+                                        <div class="text-right">
+                                            <small class="text-info">${client.address || 'Sin dirección'}</small>
+                                        </div>
+                                    </div>
+                                </div>
+                            `;
+                        });
+                        $('#depositor_client_autocomplete_results').html(html);
+                        $('#depositor_client_autocomplete_results').show();
+                        // reset keyboard index
+                        $('#depositor_client_search_input').data('suggestion-index', -1);
+                    } else {
+                        $('#depositor_client_autocomplete_results').hide();
+                    }
+                },
+                error: function () {
+                    $('#depositor_client_autocomplete_results').hide();
+                }
+            });
+
+        } else {
+            $('#depositor_client_autocomplete_results').hide();
+            $('#depositor_client_id').val('');
+        }
+    });
+
+    // Click por delegación en las sugerencias
+    $('#depositor_client_autocomplete_results').on('click', '.client-suggestion-item', function () {
+        const $t = $(this);
+        const id = $t.data('client-id');
+        const name = $t.data('client-name');
+        const doc = $t.data('client-document');
+        const phone = $t.data('client-phone');
+        selectClientForFilters(id, name, doc, phone);
+    });
+
+    // Navegación por teclado (ArrowUp, ArrowDown, Enter, Escape)
+    function _updateSuggestionHighlight(idx) {
+        const $items = $('#depositor_client_autocomplete_results .client-suggestion-item');
+        $items.removeClass('active');
+        if (idx >= 0 && idx < $items.length) {
+            const el = $items.eq(idx);
+            el.addClass('active');
+            // asegurar visibilidad
+            const container = $('#depositor_client_autocomplete_results')[0];
+            const node = el[0];
+            if (node && container) {
+                const nodeTop = node.offsetTop;
+                const nodeBottom = nodeTop + node.offsetHeight;
+                if (nodeTop < container.scrollTop) container.scrollTop = nodeTop;
+                else if (nodeBottom > container.scrollTop + container.clientHeight) container.scrollTop = nodeBottom - container.clientHeight;
+            }
+        }
+    }
+
+    $('#depositor_client_search_input').on('keydown', function (e) {
+        const $container = $('#depositor_client_autocomplete_results');
+        const $items = $container.find('.client-suggestion-item');
+        if ($items.length === 0) return;
+
+        let idx = $(this).data('suggestion-index') || -1;
+        if (e.key === 'ArrowDown') {
+            e.preventDefault();
+            idx = Math.min($items.length - 1, idx + 1);
+            $(this).data('suggestion-index', idx);
+            _updateSuggestionHighlight(idx);
+        } else if (e.key === 'ArrowUp') {
+            e.preventDefault();
+            idx = Math.max(0, idx - 1);
+            $(this).data('suggestion-index', idx);
+            _updateSuggestionHighlight(idx);
+        } else if (e.key === 'Enter') {
+            e.preventDefault();
+            if (idx >= 0 && idx < $items.length) {
+                $items.eq(idx).trigger('click');
+            }
+        } else if (e.key === 'Escape') {
+            $container.hide();
+        }
+    });
+
+    // Reset index on typing
+    $('#depositor_client_search_input').on('input', function () {
+        $(this).data('suggestion-index', -1);
+        $('#depositor_client_autocomplete_results .client-suggestion-item').removeClass('active');
+    });
+
+    function selectClientForFilters(clientId, clientName, clientDocument, clientPhone) {
+        $('#depositor_client_id').val(clientId);
+        // Mostrar solo nombre y documento en el campo de búsqueda
+        const clientDisplay = `${clientName} - ${clientDocument}`;
+        $('#depositor_client_search_input').val(clientDisplay);
+        $('#depositor_client_autocomplete_results').hide();
+
+        // Llenar el campo de teléfono
+        if (clientPhone && clientPhone.toString().trim() !== '') {
+            $('#depositor_client_phone').val(clientPhone);
+        } else {
+            $('#depositor_client_phone').val('');
+        }
+
+        // Mostrar botón de limpiar cliente
+        $('.btn-clear-client').show();
+
+        // Agregar indicador visual de cliente seleccionado
+        $('#depositor_client_search_input').addClass('is-valid');
+        $('#depositor_client_search_input').removeClass('is-invalid');
+    }
+
+    function saveDeposit() {
+        const formData = $('#deposit-form').serialize();
+        const depositId = $('#deposit_id').val();
+        
+        // Determinar si es edición o creación
+        const url = depositId ? '/payments/deposit_update/' : '/payments/deposit_save/';
+
+        $.ajax({
+            url: url,
+            method: 'POST',
+            data: formData,
+            headers: {
+                'X-CSRFToken': $('input[name=csrfmiddlewaretoken]').val()
+            },
+            success: function (response) {
+                if (response.success) {
+                    $('#modal-deposit-create').modal('hide');
+                    $('#deposit-form')[0].reset();
+                    $('#deposit_id').val('');
+                    if (typeof loadDeposits === 'function') {
+                        loadDeposits();
+                    }
+                    toastr.success(response.message);
+                    
+                    // Descargar PDF automáticamente solo para nuevos depósitos
+                    if (!depositId && response.download_pdf && response.deposit_id) {
+                        setTimeout(function() {
+                            downloadDepositPDF(response.deposit_id);
+                        }, 1000); // Esperar 1 segundo para que se cierre el modal
+                    }
+                } else {
+                    toastr.error(response.message);
+                }
+            },
+            error: function (xhr) {
+                const response = xhr.responseJSON;
+                if (response && response.message) {
+                    toastr.error(response.message);
+                } else {
+                    toastr.error(depositId ? 'Error al actualizar el depósito' : 'Error al crear el depósito');
+                }
+            }
+        });
+    }
+
+    // Función para cargar datos del depósito para edición
+    function loadDepositForEdit(depositId) {
+        $.ajax({
+            url: '/payments/get_deposit_for_edit/',
+            method: 'GET',
+            data: {
+                'deposit_id': depositId
+            },
+            success: function (response) {
+                if (response.success) {
+                    const deposit = response.deposit;
+                    
+                    // Establecer el ID del depósito
+                    $('#deposit_id').val(deposit.id);
+                    
+                    // Cargar datos básicos
+                    $('#type_deposit').val(deposit.type_deposit);
+                    $('#serial_display').val(deposit.serial);
+                    $('#correlative_display').val(deposit.correlative);
+                    $('#destination_entity').val(deposit.destination_entity);
+                    $('#account_holder').val(deposit.account_holder);
+                    $('#account_number').val(deposit.account_number);
+                    $('#amount').val(deposit.amount);
+                    // Calcular monto con comisión después de cargar el monto
+                    calculateAmountWithCommission();
+                    // Cargar sucursal de origen (readonly)
+                    $('#origin_subsidiary_id').val(deposit.origin_subsidiary_id);
+                    $('#origin_subsidiary_display').val(deposit.origin_subsidiary_name || 'Sin sucursal asignada');
+                    
+                    // Cargar sucursal encargada, pero validar que no sea la misma que la de origen
+                    if (deposit.subsidiary_encargada_id && deposit.subsidiary_encargada_id != deposit.origin_subsidiary_id) {
+                        $('#subsidiary_encargada_id').val(deposit.subsidiary_encargada_id);
+                    } else {
+                        // Si por alguna razón es la misma, limpiar el campo
+                        $('#subsidiary_encargada_id').val('');
+                        if (deposit.subsidiary_encargada_id == deposit.origin_subsidiary_id) {
+                            toastr.warning('La sucursal encargada no puede ser la misma que la de origen. Por favor seleccione otra sucursal.', 'Advertencia');
+                        }
+                    }
+                    
+                    $('#observation').val(deposit.observation);
+                    
+                    // Cargar datos del cliente
+                    if (deposit.depositor_client_id) {
+                        $('#depositor_client_id').val(deposit.depositor_client_id);
+                        
+                        // Formatear nombre y documento del cliente
+                        const documentType = deposit.depositor_client_document === '01' ? 'DNI' :
+                            deposit.depositor_client_document === '06' ? 'RUC' : 'S/D';
+                        const clientDisplay = `${deposit.depositor_client_name} - ${documentType}: ${deposit.depositor_client_number}`;
+                        $('#depositor_client_search_input').val(clientDisplay);
+                        $('#depositor_client_search_input').addClass('is-valid');
+                        
+                        // Cargar teléfono del cliente
+                        if (deposit.depositor_client_phone) {
+                            $('#depositor_client_phone').val(deposit.depositor_client_phone);
+                        } else {
+                            $('#depositor_client_phone').val('');
+                        }
+                        
+                        // Mostrar botón de limpiar cliente
+                        $('.btn-clear-client').show();
+                    }
+                    
+                    // Actualizar título del modal
+                    $('#modal-title-text').text('Editar Depósito');
+                    $('.modal-title i').removeClass('fa-plus-circle').addClass('fa-edit');
+                    
+                    // Actualizar texto del botón de guardar
+                    $('#save-button-text').text('Actualizar Depósito');
+                    
+                    toastr.success('Depósito cargado para edición', 'Información');
+                } else {
+                    toastr.error(response.message);
+                }
+            },
+            error: function (xhr) {
+                const response = xhr.responseJSON;
+                if (response && response.message) {
+                    toastr.error(response.message);
+                } else {
+                    toastr.error('Error al cargar el depósito para edición');
+                }
+            }
+        });
+    }
+
+    function openCreateClientModal() {
+        $('#create-client-form')[0].reset();
+        $('#createClientModal').modal('show');
+    }
+
+    function saveNewClient() {
+        const formData = $('#create-client-form').serialize();
+
+        // Validar que el nombre esté presente
+        const fullName = $('#new_client_name').val().trim();
+        if (!fullName) {
+            toastr.error('El nombre completo es obligatorio', 'Error de Validación');
+            $('#new_client_name').focus();
+            return;
+        }
+
+        $.ajax({
+            url: '/payments/create_client/',
+            method: 'POST',
+            data: formData,
+            headers: {
+                'X-CSRFToken': $('input[name=csrfmiddlewaretoken]').val()
+            },
+            success: function (response) {
+                if (response.success) {
+                    // Mostrar mensaje de éxito
+                    //toastr.success(response.message, 'Cliente Creado');
+
+                    // Mostrar indicador de cliente listo
+                    $('#ready-client-name').text(response.client.full_name);
+                    $('#client-ready-indicator').show();
+
+                    // Limpiar formulario
+                    $('#create-client-form')[0].reset();
+
+                    // Cerrar modal después de un breve delay
+                    setTimeout(function () {
+                        $('#createClientModal').modal('hide');
+
+                        // Seleccionar automáticamente el cliente creado
+                        selectClientFromModal(response.client);
+                    }, 500);
+
+                } else {
+                    toastr.error(response.message, 'Error al Crear Cliente');
+                }
+            },
+            error: function (xhr) {
+                const response = xhr.responseJSON;
+                if (response && response.message) {
+                    toastr.error(response.message, 'Error al Crear Cliente');
+                } else {
+                    toastr.error('Error al crear el cliente', 'Error del Sistema');
+                }
+            }
+        });
+    }
+
+    function selectClientFromModal(client) {
+        // Función para seleccionar automáticamente el cliente creado
+        const documentType = client.document === '01' ? 'DNI' :
+            client.document === '06' ? 'RUC' : 'S/D';
+        // Mostrar solo nombre y documento en el campo de búsqueda
+        const clientDisplay = `${client.full_name} - ${documentType}: ${client.number}`;
+
+        $('#depositor_client_id').val(client.id);
+        $('#depositor_client_search_input').val(clientDisplay);
+        $('#depositor_client_autocomplete_results').hide();
+
+        // Llenar el campo de teléfono
+        if (client.phone && client.phone.trim() !== '') {
+            $('#depositor_client_phone').val(client.phone);
+        } else {
+            $('#depositor_client_phone').val('');
+        }
+
+        // Mostrar botón de limpiar cliente
+        $('.btn-clear-client').show();
+
+        // Agregar indicador visual de cliente seleccionado
+        $('#depositor_client_search_input').addClass('is-valid');
+        $('#depositor_client_search_input').removeClass('is-invalid');
+
+        toastr.success(`Cliente "${client.full_name}" seleccionado automáticamente`, 'Cliente Seleccionado');
+    }
+
+    function searchClientInAPI() {
+        const documentType = $('#new_client_document').val();
+        const documentNumber = $('#new_client_number').val().trim();
+        if (!documentType || !documentNumber) {
+            toastr.error('Debe seleccionar el tipo de documento y escribir el número', 'Error de validación');
+            return;
+        }
+
+        // Validar formato del documento antes de consultar
+        if (documentType === '01' && documentNumber.length !== 8) {
+            toastr.error('El DNI debe tener exactamente 8 dígitos', 'Error de validación');
+            return;
+        } else if (documentType === '06' && documentNumber.length !== 11) {
+            toastr.error('El RUC debe tener exactamente 11 dígitos', 'Error de validación');
+            return;
+        }
+
+        // Mostrar loading
+        const numberField = $('#new_client_number');
+        const originalValue = numberField.val();
+        numberField.prop('disabled', true);
+        numberField.addClass('loading');
+
+        $.ajax({
+            url: '{% url "apps.sales:get_api_person" %}',
+            type: 'GET',
+            data: {
+                'nro_document': documentNumber,
+                'type': documentType
+            },
+            success: function (response) {
+                // Ocultar indicador de búsqueda
+                $('.search-indicator').remove();
+                numberField.prop('disabled', false);
+                numberField.removeClass('loading');
+
+                if (response.pk) {
+                    // Cliente encontrado (en BD o API)
+                    if (response.message === 'Cliente encontrado en BD') {
+                        // Cliente ya existe en la base de datos
+                        toastr.info('Este cliente ya está registrado en el sistema', 'Cliente existente');
+
+                        if (documentType === '01') {
+                            // DNI - Persona natural
+                            $('#new_client_name').val(response.names || '');
+                            $('#new_client_address').val(response.address || '');
+                        } else if (documentType === '06') {
+                            // RUC - Empresa (el tipo '06' es para RUC según la función get_api_person)
+                            $('#new_client_name').val(response.names || '');
+                            $('#new_client_address').val(response.address || '');
+                        }
+                        changeButtonToSelect(response.pk, response.names);
+                        // Limpiar campos
+                        //clearClientFields();
+
+                    } else {
+                        // Cliente encontrado en API externa
+                        toastr.success('Cliente encontrado y registrado automáticamente', '¡Cliente encontrado!');
+
+                        // Llenar campos con la información obtenida
+                        if (documentType === '01') {
+                            // DNI - Persona natural
+                            $('#new_client_name').val(response.names || '');
+                            $('#new_client_address').val(response.address || '');
+                        } else if (documentType === '06') {
+                            // RUC - Empresa (el tipo '06' es para RUC según la función get_api_person)
+                            $('#new_client_name').val(response.names || '');
+                            $('#new_client_address').val(response.address || '');
+                        }
+
+                        // Marcar como válido
+                        numberField.addClass('is-valid');
+                        numberField.removeClass('is-invalid');
+
+                        // Cambiar botón a "Seleccionar" y guardar ID del cliente
+                        changeButtonToSelect(response.pk, response.names);
+                    }
+                } else {
+                    // No se encontró el cliente
+                    toastr.warning('Cliente no encontrado. Complete los datos manualmente.', 'Cliente no encontrado');
+
+                    // Marcar como inválido
+                    numberField.addClass('is-invalid');
+                    numberField.removeClass('is-valid');
+
+                    // Limpiar campos
+                    clearClientFields();
+                }
+            },
+            error: function (xhr) {
+                // Ocultar indicador de búsqueda
+                $('.search-indicator').remove();
+                numberField.prop('disabled', false);
+                numberField.removeClass('loading');
+
+                let errorMessage = 'Error al consultar el documento';
+
+                if (xhr.responseJSON && xhr.responseJSON.error) {
+                    errorMessage = xhr.responseJSON.error;
+                } else if (xhr.status === 500) {
+                    errorMessage = 'Error interno del servidor';
+                } else if (xhr.status === 404) {
+                    errorMessage = 'Servicio no disponible';
+                }
+
+                toastr.error(errorMessage, 'Error en la consulta');
+
+                // Marcar como inválido
+                numberField.addClass('is-invalid');
+                numberField.removeClass('is-valid');
+
+                // Limpiar campos
+                clearClientFields();
+            }
+        });
+    }
+
+    $('#createClientModal').on('hidden.bs.modal', function () {
+        $('#client-ready-indicator').hide();
+        if ($('.modal.show').length) {
+            $('body').addClass('modal-open');
+        }
+    });
+
+    function downloadDepositPDF(depositId) {
+        // Crear un enlace temporal para descargar el PDF
+        const downloadUrl = `/payments/download_deposit_pdf/${depositId}/`;
+        
+        // Crear un elemento <a> temporal
+        const link = document.createElement('a');
+        link.href = downloadUrl;
+        link.download = `Deposito_${depositId}.pdf`;
+        
+        // Agregar el enlace al DOM temporalmente y hacer clic
+        document.body.appendChild(link);
+        link.click();
+        
+        // Remover el enlace del DOM
+        document.body.removeChild(link);
+        
+        // Mostrar mensaje de éxito
+        toastr.success('Descargando PDF del depósito...');
+    }
+
+    function clearClientSelection() {
+        // Limpiar selección de cliente
+        $('#depositor_client_id').val('');
+        $('#depositor_client_search_input').val('');
+        $('#depositor_client_phone').val('');
+        $('#depositor_client_search_input').removeClass('is-valid is-invalid');
+        $('.btn-clear-client').hide();
+        $('#depositor_client_autocomplete_results').hide();
+    }
+
+    // Función para resetear el modal cuando se abre para crear nuevo depósito
+    function resetDepositModal() {
+        $('#deposit-form')[0].reset();
+        $('#deposit_id').val('');
+        $('#depositor_client_id').val('');
+        $('#depositor_client_search_input').val('');
+        $('#depositor_client_phone').val('');
+        $('#depositor_client_search_input').removeClass('is-valid is-invalid');
+        $('.btn-clear-client').hide();
+        $('#depositor_client_autocomplete_results').hide();
+        $('#commission').val(''); // Limpiar comisión
+        $('#amount_with_commission').val(''); // Limpiar monto con comisión
+        $('#modal-title-text').text('Nueva Transacción');
+        $('#save-button-text').text('Guardar Depósito');
+        $('.modal-title i').removeClass('fa-edit').addClass('fa-plus-circle');
+    }
+
+    // Función pública para abrir el modal en modo edición (se puede llamar desde fuera)
+    window.editDeposit = function(depositId) {
+        // Cargar los datos del depósito directamente
+        loadDepositForEdit(depositId);
+    };
+
+    // Validar que la sucursal encargada no sea la misma que la de origen
+    $('#subsidiary_encargada_id').on('change', function() {
+        const originSubsidiaryId = $('#origin_subsidiary_id').val();
+        const selectedSubsidiaryId = $(this).val();
+        
+        if (originSubsidiaryId && selectedSubsidiaryId && originSubsidiaryId === selectedSubsidiaryId) {
+            toastr.error('La sucursal encargada no puede ser la misma que la sucursal de origen', 'Error de Validación');
+            $(this).val('');
+            return false;
+        }
+    });
+
+    // Resetear el modal cuando se abre para crear (si no hay deposit_id)
+    $(document).on('shown.bs.modal', '#modal-deposit-create', function() {
+        // Solo resetear si no hay deposit_id (modo creación)
+        if (!$('#deposit_id').val()) {
+            resetDepositModal();
+        }
+    });
+
+</script>

@@ -1,0 +1,315 @@
+<div class="modal-dialog modal-xl roboto-condensed-regular" role="document">
+    <div class="modal-content">
+        <div class="modal-header bg-info text-white">
+            <h5 class="modal-title">
+                <i class="fas fa-university mr-2"></i>Gestión de Entidades de Destino
+            </h5>
+            <button type="button" class="close text-white" data-dismiss="modal">
+                <span>&times;</span>
+            </button>
+        </div>
+        <div class="modal-body">
+            <!-- Formulario de entidad -->
+            <div class="row mb-4">
+                <div class="col-12">
+                    <div class="card border-primary">
+                        <div class="card-header bg-light">
+                            <h6 class="mb-0 text-primary">
+                                <i class="fas fa-edit mr-2"></i>Formulario de Entidad
+                            </h6>
+                        </div>
+                        <div class="card-body">
+                            <form id="entity-form">
+                                {% csrf_token %}
+                                <input type="hidden" id="entity_id" name="entity_id" value="">
+
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="form-group mb-3">
+                                            <label for="entity_name" class="form-label">
+                                                <i class="fas fa-building mr-1"></i>Nombre de la Entidad <span
+                                                    class="text-danger">*</span>
+                                            </label>
+                                            <input type="text" class="form-control" id="entity_name" name="name"
+                                                   autocomplete="off"
+                                                   placeholder="Ej: Banco de Crédito del Perú" required>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="form-group mb-3">
+                                            <label for="entity_code" class="form-label">
+                                                <i class="fas fa-code mr-1"></i>Código <span
+                                                    class="text-danger">*</span>
+                                            </label>
+                                            <input type="text" class="form-control text-uppercase"
+                                                   id="entity_code" name="code"
+                                                   autocomplete="off"
+                                                   placeholder="Ej: BCP" maxlength="20" required>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-2">
+                                        <div class="form-group mb-3">
+                                            <label for="entity_active" class="form-label">
+                                                <i class="fas fa-toggle-on mr-1"></i>Estado
+                                            </label>
+                                            <div class="form-check form-switch mt-2">
+                                                <input class="form-check-input" type="checkbox"
+                                                       id="entity_active" name="is_active" checked>
+                                                <label class="form-check-label" for="entity_active">
+                                                    Activo
+                                                </label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-12 text-right">
+                                        <button type="button" class="btn btn-secondary mr-2"
+                                                onclick="clearEntityForm()">
+                                            <i class="fas fa-times mr-1"></i>Limpiar
+                                        </button>
+                                        <button type="button" class="btn btn-primary" onclick="saveEntity()">
+                                            <i class="fas fa-save mr-1"></i>Guardar Entidad
+                                        </button>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Lista de entidades -->
+            <div class="row">
+                <div class="col-12">
+                    <div class="card border-success">
+                        <div class="card-header bg-light">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <h6 class="mb-0 text-success">
+                                    <i class="fas fa-list mr-2"></i>Lista de Entidades
+                                </h6>
+                                <button type="button" class="btn btn-outline-success btn-sm"
+                                        onclick="loadEntities()" title="Actualizar lista">
+                                    <i class="fas fa-refresh"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="card-body p-0">
+                            <div class="table-responsive">
+                                <table class="table table-hover mb-0">
+                                    <thead class="thead-light">
+                                    <tr>
+                                        <th class="text-white" style="width:5%">ID</th>
+                                        <th class="text-white" style="width:35%">Nombre</th>
+                                        <th class="text-white" style="width:15%">Código</th>
+                                        <th class="text-white" style="width:10%">Estado</th>
+                                        <th class="text-white" style="width:15%">Creado</th>
+                                        <th class="text-white" style="width:15%">Actualizado</th>
+                                        <th class="text-white" style="width:5%">Acciones</th>
+                                    </tr>
+                                    </thead>
+                                    <tbody id="entities-table-body">
+
+                                    {% if entities %}
+                                        {% for e in entities %}
+                                            <tr>
+                                                <td>{{ forloop.counter }}</td>
+                                                <td><strong>{{ e.name }}</strong></td>
+                                                <td><code>{{ e.code }}</code></td>
+                                                <td>
+                                                    {% if e.is_active %}
+                                                        <span class="badge badge-status badge-active">Activo</span>
+                                                    {% else %}
+                                                        <span class="badge badge-status badge-inactive">Inactivo</span>
+                                                    {% endif %}
+                                                </td>
+                                                <td><small class="text-muted">{{ e.created_at }}</small></td>
+                                                <td><small class="text-muted">{{ e.updated_at }}</small></td>
+                                                <td>
+                                                    <button type="button" class="btn btn-action btn-edit btn-sm"
+                                                            onclick="editEntity({{ e.id }})" title="Editar entidad">
+                                                        <i class="fas fa-edit"></i>
+                                                    </button>
+                                                    <button type="button" class="btn btn-action btn-delete btn-sm"
+                                                            onclick="deleteEntity({{ e.id }}, '{{ e.name }}')"
+                                                            title="Eliminar entidad">
+                                                        <i class="fas fa-trash"></i>
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                        {% endfor %}
+                                    {% else %}
+                                        <tr>
+                                            <td colspan="7" class="text-center text-muted py-4">
+                                                <i class="fas fa-info-circle mr-2"></i>No hay entidades registradas
+                                            </td>
+                                        </tr>
+                                    {% endif %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-dismiss="modal">
+                <i class="fas fa-times mr-1"></i>Cerrar
+            </button>
+        </div>
+    </div>
+</div>
+
+
+<script>
+
+
+    function saveEntity() {
+        const formData = new FormData($('#entity-form')[0]);
+
+        // Validaciones básicas
+        const name = $('#entity_name').val().trim();
+        const code = $('#entity_code').val().trim();
+
+        if (!name) {
+            toastr.error('El nombre es obligatorio');
+            $('#entity_name').focus();
+            return;
+        }
+
+        if (!code) {
+            toastr.error('El código es obligatorio');
+            $('#entity_code').focus();
+            return;
+        }
+
+        // Mostrar loading
+        const saveButton = $('button[onclick="saveEntity()"]');
+        const originalText = saveButton.html();
+        saveButton.html('<i class="fas fa-spinner fa-spin mr-1"></i>Guardando...');
+        saveButton.prop('disabled', true);
+
+        $.ajax({
+            url: '/payments/destination_entity_save/',
+            method: 'POST',
+            data: formData,
+            processData: false,
+            contentType: false,
+            headers: {
+                'X-CSRFToken': $('input[name=csrfmiddlewaretoken]').val()
+            },
+            success: function (response) {
+                if (response.success) {
+                    toastr.success(response.message);
+                    loadEntities();
+                } else {
+                    toastr.error(response.message);
+                }
+            },
+            error: function (xhr) {
+                let errorMessage = 'Error al guardar la entidad';
+                if (xhr.responseJSON && xhr.responseJSON.message) {
+                    errorMessage = xhr.responseJSON.message;
+                }
+                toastr.error(errorMessage);
+            },
+            complete: function () {
+                saveButton.html(originalText);
+                saveButton.prop('disabled', false);
+            }
+        });
+    }
+
+    function editEntity(entityId) {
+        $.ajax({
+            url: '/payments/destination_entity_get/',
+            method: 'GET',
+            data: {entity_id: entityId},
+            success: function (response) {
+                if (response.success) {
+                    const entity = response.entity;
+                    $('#entity_id').val(entity.id);
+                    $('#entity_name').val(entity.name);
+                    $('#entity_code').val(entity.code);
+                    $('#entity_active').prop('checked', entity.is_active);
+
+                    // Scroll al formulario
+                    $('html, body').animate({
+                        scrollTop: $('#entity-form').offset().top - 100
+                    }, 500);
+
+                    toastr.info('Entidad cargada para edición');
+                } else {
+                    toastr.error(response.message);
+                }
+            },
+            error: function () {
+                toastr.error('Error al cargar la entidad');
+            }
+        });
+    }
+
+    function loadEntities() {
+        $.ajax({
+            url: '/payments/destination_entity_list',
+            method: 'GET',
+            success: function (response) {
+                if (response.success) {
+                    displayEntities(response.entities);
+                } else {
+                    toastr.error(response.message);
+                }
+            },
+            error: function () {
+                toastr.error('Error al cargar las entidades');
+            }
+        });
+    }
+
+    function displayEntities(entities) {
+        const tbody = $('#entities-table-body');
+        tbody.empty();
+
+        if (entities.length === 0) {
+            tbody.append(`
+                    <tr>
+                        <td colspan="7" class="text-center text-muted py-4">
+                            <i class="fas fa-info-circle mr-2"></i>No hay entidades registradas
+                        </td>
+                    </tr>
+                `);
+            return;
+        }
+
+        entities.forEach(function (entity) {
+            const statusBadge = entity.is_active
+                ? '<span class="badge badge-status badge-active">Activo</span>'
+                : '<span class="badge badge-status badge-inactive">Inactivo</span>';
+
+            const row = $(`
+                    <tr>
+                        <td>${entity.id}</td>
+                        <td><strong>${entity.name}</strong></td>
+                        <td><code>${entity.code}</code></td>
+                        <td>${statusBadge}</td>
+                        <td><small class="text-muted">${entity.created_at}</small></td>
+                        <td><small class="text-muted">${entity.updated_at}</small></td>
+                        <td>
+                            <button type="button" class="btn btn-action btn-edit"
+                                    onclick="editEntity(${entity.id})" title="Editar entidad">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button type="button" class="btn btn-action btn-delete"
+                                    onclick="deleteEntity(${entity.id}, '${entity.name}')" title="Eliminar entidad">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </td>
+                    </tr>
+                `);
+            tbody.append(row);
+        });
+    }
+
+</script>

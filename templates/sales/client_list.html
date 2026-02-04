@@ -1,0 +1,308 @@
+{% extends 'home.html' %}
+{% load static %}
+{% block title %}
+    Gestión de Clientes
+{% endblock title %}
+
+{% block body %}
+    <div class="content-header">
+        <div class="container-fluid roboto-condensed-regular">
+            <!-- Header Principal -->
+            <div class="row mb-4">
+                <div class="col-12">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h1 class="m-0 text-dark font-weight-bold">
+                                <i class="fas fa-users mr-3" style="color: #6c7a99;"></i>Gestión de Clientes
+                            </h1>
+                            <p class="text-muted mb-0 mt-2">
+                                <i class="fas fa-info-circle mr-2"></i>Administra y organiza tu base de datos de clientes
+                            </p>
+                        </div>
+                        <div class="d-flex gap-2">
+                            <button type="button" class="btn btn-soft-primary view-toggle" data-view="grid" title="Vista en tarjetas">
+                                <i class="fas fa-th mr-2"></i>Grid
+                            </button>
+                            <button type="button" class="btn btn-soft-primary view-toggle active" data-view="table" title="Vista en tabla">
+                                <i class="fas fa-list mr-2"></i>Tabla
+                            </button>
+                            <button type="button" onclick="showModalView('modal_client_create')" class="btn btn-primary">
+                                <i class="fas fa-plus mr-2"></i>Nuevo Cliente
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Estadísticas Rápidas -->
+            <div class="row mb-4">
+                <div class="col-md-3 col-sm-6">
+                    <div class="stat-card">
+                        <div class="stat-icon" style="background: linear-gradient(135deg, #e7f1ff 0%, #f0f7ff 100%); color: #0066cc;">
+                            <i class="fas fa-users fa-lg"></i>
+                        </div>
+                        <div class="stat-content">
+                            <div class="stat-value">{{ client_set|length }}</div>
+                            <div class="stat-label">Total de Clientes</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3 col-sm-6">
+                    <div class="stat-card">
+                        <div class="stat-icon" style="background: linear-gradient(135deg, #fff4e7 0%, #fffbf0 100%); color: #ff9900;">
+                            <i class="fas fa-id-card fa-lg"></i>
+                        </div>
+                        <div class="stat-content">
+                            <div class="stat-value">{{ client_set|length }}</div>
+                            <div class="stat-label">Clientes con DNI</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3 col-sm-6">
+                    <div class="stat-card">
+                        <div class="stat-icon" style="background: linear-gradient(135deg, #f0f7e7 0%, #f7ffe7 100%); color: #66cc00;">
+                            <i class="fas fa-building fa-lg"></i>
+                        </div>
+                        <div class="stat-content">
+                            <div class="stat-value">{{ client_set|length }}</div>
+                            <div class="stat-label">Clientes con RUC</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3 col-sm-6">
+                    <div class="stat-card">
+                        <div class="stat-icon" style="background: linear-gradient(135deg, #f0e7ff 0%, #f7f0ff 100%); color: #9900ff;">
+                            <i class="fas fa-briefcase fa-lg"></i>
+                        </div>
+                        <div class="stat-content">
+                            <div class="stat-value">{{ occupation_name|length }}</div>
+                            <div class="stat-label">Ocupaciones</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tarjeta Principal de Contenido -->
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-white border-bottom py-3 px-4">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h5 class="card-title mb-0 font-weight-bold">
+                            <i class="fas fa-list-ul mr-2" style="color: #6c7a99;"></i>Listado de Clientes
+                        </h5>
+                        <div class="d-flex align-items-center">
+                            <div class="input-group input-group-sm mr-3" style="width: 250px;">
+                                <div class="input-group-prepend">
+                                    <span class="input-group-text bg-white border-right-0">
+                                        <i class="fas fa-search" style="color: #6c7a99;"></i>
+                                    </span>
+                                </div>
+                                <input type="text" class="form-control border-left-0" id="quick-search" 
+                                       placeholder="Buscar cliente...">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card-body p-0">
+                    <!-- Vista Tabla (por defecto visible) -->
+                    <div id="table-view" class="view-container">
+                        {% include "sales/client_table_view.html" %}
+                    </div>
+
+                    <!-- Vista Grid (oculta inicialmente) -->
+                    <div id="grid-view" class="view-container d-none">
+                        {% include "sales/client_grid_view.html" %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modales -->
+    <div class="modal fade" id="modal-client-create" tabindex="-1" role="dialog" aria-hidden="true"></div>
+    <div class="modal fade" id="modal-client-update" tabindex="-1" role="dialog" aria-hidden="true"></div>
+
+{% endblock body %}
+
+{% block extrajs %}
+    <script type="text/javascript">
+        $(document).ready(function () {
+            // Cambiar entre vistas
+            $('.view-toggle').on('click', function () {
+                const view = $(this).data('view');
+                
+                $('.view-toggle').removeClass('active');
+                $(this).addClass('active');
+                
+                if (view === 'grid') {
+                    $('#table-view').addClass('d-none');
+                    $('#grid-view').removeClass('d-none');
+                } else {
+                    $('#grid-view').addClass('d-none');
+                    $('#table-view').removeClass('d-none');
+                }
+            });
+
+            // Función para mostrar modal de creación
+            window.showModalView = function (route) {
+                $.ajax({
+                    url: '/sales/' + route + '/',
+                    dataType: 'json',
+                    type: 'GET',
+                    success: function (response) {
+                        $('#modal-client-create').html(response.form);
+                        $('#modal-client-create').modal('show');
+                    },
+                    error: function (response) {
+                        toastr.error('Error al cargar el formulario', 'Error');
+                    }
+                });
+            };
+
+            // Función para mostrar modal de edición
+            $(document).on('click', '.item-edit', function () {
+                let _pk = $(this).attr('pk');
+                $.ajax({
+                    url: '/sales/modal_client_update/',
+                    dataType: 'json',
+                    type: 'GET',
+                    data: {'pk': _pk},
+                    success: function (response) {
+                        $('#modal-client-update').html(response.form);
+                        $('#modal-client-update').modal('show');
+                    },
+                    error: function (response) {
+                        toastr.error('Error al cargar el formulario', 'Error');
+                    }
+                });
+            });
+
+            // Búsqueda en tiempo real
+            $('#quick-search').on('keyup', function () {
+                let searchTerm = $(this).val().toLowerCase();
+                
+                $('.client-row, .client-card').each(function () {
+                    let name = $(this).data('name') || '';
+                    let number = $(this).data('number') || '';
+                    
+                    if (name.includes(searchTerm) || number.includes(searchTerm)) {
+                        $(this).show().css('opacity', 1);
+                    } else {
+                        $(this).hide().css('opacity', 0.5);
+                    }
+                });
+            });
+        });
+
+        function deleteClient(clientId) {
+            Swal.fire({
+                title: '¿Eliminar cliente?',
+                text: 'Esta acción no se puede deshacer',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#dc3545',
+                cancelButtonColor: '#6c757d',
+                confirmButtonText: 'Sí, eliminar',
+                cancelButtonText: 'Cancelar'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    // Aquí implementar eliminación
+                    toastr.success('Cliente eliminado correctamente');
+                }
+            });
+        }
+    </script>
+
+    <style>
+        /* Estilos suaves y modernos */
+        .view-toggle {
+            background: #f8f9fa;
+            border: 1px solid #e0e6ed;
+            color: #6c7a99;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            border-radius: 6px;
+        }
+
+        .view-toggle:hover {
+            background: #e9ecef;
+            border-color: #d0d8e8;
+            transform: translateY(-1px);
+        }
+
+        .view-toggle.active {
+            background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+            border-color: #0056b3;
+            color: white;
+            box-shadow: 0 4px 12px rgba(0, 123, 255, 0.3);
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+            border: none;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(0, 123, 255, 0.4);
+        }
+
+        /* Tarjetas de estadísticas */
+        .stat-card {
+            background: linear-gradient(135deg, #fff9f5 0%, #fffbf8 100%);
+            border: 1px solid #f0e6dd;
+            border-radius: 12px;
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        }
+
+        .stat-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+            border-color: #e0d0c0;
+        }
+
+        .stat-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+        }
+
+        .stat-value {
+            font-size: 24px;
+            font-weight: bold;
+            color: #2d3748;
+        }
+
+        .stat-label {
+            font-size: 12px;
+            color: #a0aec0;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-weight: 500;
+        }
+
+        .card {
+            border-radius: 12px;
+            transition: all 0.3s ease;
+        }
+
+        .card:hover {
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12) !important;
+        }
+
+        .gap-2 {
+            gap: 0.5rem !important;
+        }
+    </style>
+{% endblock extrajs %}

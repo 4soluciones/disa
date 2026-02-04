@@ -1,0 +1,227 @@
+<!-- Header Principal con Información Clave -->
+<div class="row mb-3">
+    <div class="col-12">
+        <div class="card border-primary">
+            <div class="card-header bg-primary text-white py-2">
+                <div class="row align-items-center">
+                    <div class="col-md-8">
+                        <h5 class="mb-0 text-dark" style="font-size: 1.1rem;">
+                            <i class="fas fa-receipt mr-2"></i>{{ deposit.deposit_number }}
+                        </h5>
+                        <small class="text-dark" style="font-size: 0.8rem;">{{ deposit.get_type_deposit_display }}
+                            - {{ deposit.creation_date|date:"d/m/Y H:i" }}</small>
+                    </div>
+                    <div class="col-md-4 text-right">
+                        <span class="h4 text-success font-weight-bold"
+                              style="font-size: 1.4rem;">S/ {{ deposit.amount }}</span>
+                        <br>
+                        {% if deposit.status == 'P' %}
+                            <span class="badge badge-warning"
+                                  style="font-size: 0.7rem;">{{ deposit.get_status_display }}</span>
+                        {% elif deposit.status == 'C' %}
+                            <span class="badge badge-success"
+                                  style="font-size: 0.7rem;">{{ deposit.get_status_display }}</span>
+                        {% elif deposit.status == 'A' %}
+                            <span class="badge badge-danger"
+                                  style="font-size: 0.7rem;">{{ deposit.get_status_display }}</span>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mb-3">
+    <div class="col-12">
+        <!-- Cliente Depositante -->
+        <div class="card border-success mb-3">
+            <div class="card-header bg-success text-white py-2">
+                <h6 class="mb-0 text-dark" style="font-size: 0.9rem;">
+                    <i class="fas fa-user mr-1"></i>Cliente Depositante
+                </h6>
+            </div>
+            <div class="card-body py-2">
+                <div class="row">
+                    <div class="col-12 mb-2">
+                        <strong style="font-size: 0.8rem;">Nombre Completo:</strong><br>
+                        <span style="font-size: 0.85rem; font-weight: 500;">{{ deposit.depositor_client.full_name }}</span>
+                    </div>
+                </div>
+                {% if deposit.depositor_client.document and deposit.depositor_client.number %}
+                    <div class="row">
+                        <div class="col-6">
+                            <strong style="font-size: 0.8rem;">Documento:</strong><br>
+                            <span style="font-size: 0.8rem;">{{ deposit.depositor_client.get_document_display }}</span>
+                        </div>
+                        <div class="col-6">
+                            <strong style="font-size: 0.8rem;">Número:</strong><br>
+                            <span style="font-size: 0.8rem;">{{ deposit.depositor_client.number }}</span>
+                        </div>
+                    </div>
+                {% endif %}
+                {% if deposit.depositor_client.phone %}
+                    <hr class="my-2">
+                    <div class="row">
+                        <div class="col-12">
+                            <strong style="font-size: 0.8rem;">Teléfono:</strong><br>
+                            <span style="font-size: 0.8rem;"><i class="fas fa-phone mr-1"></i>{{ deposit.depositor_client.phone }}</span>
+                        </div>
+                    </div>
+                {% endif %}
+                {% if deposit.depositor_client.address %}
+                    <hr class="my-2">
+                    <div class="row">
+                        <div class="col-12">
+                            <strong style="font-size: 0.8rem;">Dirección:</strong><br>
+                            <span style="font-size: 0.8rem;">{{ deposit.depositor_client.address }}</span>
+                        </div>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Información Principal en 2 Columnas -->
+<div class="row">
+    <div class="col-md-6">
+        <!-- Información Bancaria -->
+        <div class="card border-info mb-3">
+            <div class="card-header bg-info text-white py-2">
+                <h6 class="mb-0 text-dark" style="font-size: 0.9rem;">
+                    <i class="fas fa-university mr-1"></i>Información Bancaria
+                </h6>
+            </div>
+            <div class="card-body py-2">
+                <div class="row">
+                    <div class="col-12 mb-2">
+                        <strong style="font-size: 0.8rem;">Entidad de Destino:</strong><br>
+                        <span style="font-size: 0.85rem; font-weight: 500;">{{ deposit.destination_entity.name }}</span>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-12 mb-2">
+                        <strong style="font-size: 0.8rem;">Titular Receptor:</strong><br>
+                        <span style="font-size: 0.85rem;">{{ deposit.account_holder }}</span>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-12">
+                        <strong style="font-size: 0.8rem;">Número de Cuenta:</strong><br>
+                        <span class="font-monospace"
+                              style="font-size: 0.85rem; font-weight: 500;">{{ deposit.account_number }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-6">
+        <!-- Información Operativa -->
+        <div class="card border-warning mb-3">
+            <div class="card-header bg-warning text-dark py-2">
+                <h6 class="mb-0 text-dark" style="font-size: 0.9rem;">
+                    <i class="fas fa-cogs mr-1"></i>Información Operativa
+                </h6>
+            </div>
+            <div class="card-body py-2">
+                <div class="row">
+                    <div class="col-12 mb-2">
+                        <strong style="font-size: 0.8rem;">Sucursal de Origen:</strong><br>
+                        <span style="font-size: 0.85rem;">{{ deposit.origin_subsidiary.name }}</span>
+                    </div>
+                </div>
+                {% if deposit.subsidiary_encargada %}
+                    <div class="row">
+                        <div class="col-12 mb-2">
+                            <strong style="font-size: 0.8rem;">Sucursal Encargada:</strong><br>
+                            <span style="font-size: 0.85rem;">{{ deposit.subsidiary_encargada.name }}</span>
+                        </div>
+                    </div>
+                {% endif %}
+                <div class="row">
+                    <div class="col-12">
+                        <strong style="font-size: 0.8rem;">Cajero:</strong><br>
+                        <span style="font-size: 0.85rem;">{{ deposit.cashier.first_name }} {{ deposit.cashier.last_name }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-12">
+        <!-- Comprobante -->
+        <div class="card border-secondary mb-3">
+            <div class="card-header bg-secondary text-white py-2">
+                <h6 class="mb-0 text-dark" style="font-size: 0.9rem;">
+                    <i class="fas fa-camera mr-1"></i>Comprobante
+                </h6>
+            </div>
+            <div class="card-body text-center py-3">
+                {% if deposit.photo and deposit.photo.name != 'vouchers/default-placeholder.png' %}
+                    <img src="{{ deposit.photo.url }}" alt="Comprobante" class="img-fluid rounded"
+                         style="max-height: 250px; box-shadow: 0 4px 8px rgba(0,0,0,0.1);">
+                    <p class="text-muted mt-2 mb-0" style="font-size: 0.75rem;">
+                        <i class="fas fa-image mr-1"></i>
+                        Subido el {{ deposit.updated_at|date:"d/m/Y H:i" }}
+                    </p>
+                {% else %}
+                    <div class="text-muted">
+                        <i class="fas fa-image fa-2x mb-2"></i>
+                        <p class="mb-0" style="font-size: 0.85rem;">No se ha subido comprobante</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Información de Confirmación (si aplica) -->
+{% if deposit.status == 'C' %}
+    <div class="row">
+        <div class="col-12">
+            <div class="card border-success">
+                <div class="card-header bg-success text-white py-2">
+                    <h6 class="mb-0 text-dark" style="font-size: 0.9rem;">
+                        <i class="fas fa-check-circle mr-1"></i>Confirmación del Depósito
+                    </h6>
+                </div>
+                <div class="card-body py-2">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <strong style="font-size: 0.8rem;">Confirmado por:</strong><br>
+                            <span style="font-size: 0.85rem; font-weight: 500;">{{ deposit.confirmed_by.first_name }} {{ deposit.confirmed_by.last_name }}</span>
+                        </div>
+                        <div class="col-md-6">
+                            <strong style="font-size: 0.8rem;">Fecha de Confirmación:</strong><br>
+                            <span style="font-size: 0.85rem;">{{ deposit.confirmed_at|date:"d/m/Y H:i" }}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endif %}
+
+<!-- Observaciones (si aplica) -->
+{% if deposit.observation %}
+    <div class="row mt-3">
+        <div class="col-12">
+            <div class="card border-light">
+                <div class="card-header bg-light py-2">
+                    <h6 class="mb-0 text-dark" style="font-size: 0.9rem;">
+                        <i class="fas fa-comment mr-1"></i>Observaciones
+                    </h6>
+                </div>
+                <div class="card-body py-2">
+                    <p class="mb-0" style="font-size: 0.85rem;">{{ deposit.observation }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endif %}

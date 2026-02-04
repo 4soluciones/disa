@@ -1,0 +1,214 @@
+{% extends 'home.html' %}
+{% load static %}
+
+{% block title %}
+    {% if object %}Editar{% else %}Nueva{% endif %} Orden de Depósito
+{% endblock title %}
+
+{% block body %}
+    <div class="container-fluid pt-2 roboto-condensed-regular">
+        <!-- Content Header (Page header) -->
+        <div class="content-header">
+            <div class="container-fluid">
+                <div class="row mb-2">
+                    <div class="col-sm-6">
+                        <h1 class="m-0 text-dark">
+                            <i class="fas fa-university mr-2"></i>
+                            {% if object %}Editar{% else %}Nueva{% endif %} Orden de Depósito
+                        </h1>
+                    </div>
+                    <div class="col-sm-6">
+                        <ol class="breadcrumb float-sm-right">
+                            <li class="breadcrumb-item"><a href="{% url 'home' %}">Inicio</a></li>
+                            <li class="breadcrumb-item"><a href="{% url 'payments:deposit_order_list' %}">Órdenes de Depósito</a></li>
+                            <li class="breadcrumb-item active">{% if object %}Editar{% else %}Nueva{% endif %}</li>
+                        </ol>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main content -->
+        <div class="content">
+            <div class="container-fluid">
+                <div class="row">
+                    <div class="col-12">
+                        <div class="card">
+                            <div class="card-header">
+                                <h3 class="card-title">
+                                    <i class="fas fa-edit mr-2"></i>
+                                    Información del Depósito
+                                </h3>
+                            </div>
+                            <form method="post">
+                                {% csrf_token %}
+                                <div class="card-body">
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <div class="form-group">
+                                                <label for="{{ form.depositor_name.id_for_label }}">{{ form.depositor_name.label }}</label>
+                                                {{ form.depositor_name }}
+                                                {% if form.depositor_name.errors %}
+                                                    <div class="text-danger">
+                                                        {% for error in form.depositor_name.errors %}
+                                                            <small>{{ error }}</small>
+                                                        {% endfor %}
+                                                    </div>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="form-group">
+                                                <label for="{{ form.depositor_document.id_for_label }}">{{ form.depositor_document.label }}</label>
+                                                {{ form.depositor_document }}
+                                                {% if form.depositor_document.errors %}
+                                                    <div class="text-danger">
+                                                        {% for error in form.depositor_document.errors %}
+                                                            <small>{{ error }}</small>
+                                                        {% endfor %}
+                                                    </div>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <div class="form-group">
+                                                <label for="{{ form.nationality.id_for_label }}">{{ form.nationality.label }}</label>
+                                                {{ form.nationality }}
+                                                {% if form.nationality.errors %}
+                                                    <div class="text-danger">
+                                                        {% for error in form.nationality.errors %}
+                                                            <small>{{ error }}</small>
+                                                        {% endfor %}
+                                                    </div>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="form-group">
+                                                <label for="{{ form.bank.id_for_label }}">{{ form.bank.label }}</label>
+                                                {{ form.bank }}
+                                                {% if form.bank.errors %}
+                                                    <div class="text-danger">
+                                                        {% for error in form.bank.errors %}
+                                                            <small>{{ error }}</small>
+                                                        {% endfor %}
+                                                    </div>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <div class="form-group">
+                                                <label for="{{ form.account_holder.id_for_label }}">{{ form.account_holder.label }}</label>
+                                                {{ form.account_holder }}
+                                                {% if form.account_holder.errors %}
+                                                    <div class="text-danger">
+                                                        {% for error in form.account_holder.errors %}
+                                                            <small>{{ error }}</small>
+                                                        {% endfor %}
+                                                    </div>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="form-group">
+                                                <label for="{{ form.account_number.id_for_label }}">{{ form.account_number.label }}</label>
+                                                {{ form.account_number }}
+                                                {% if form.account_number.errors %}
+                                                    <div class="text-danger">
+                                                        {% for error in form.account_number.errors %}
+                                                            <small>{{ error }}</small>
+                                                        {% endfor %}
+                                                    </div>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <div class="form-group">
+                                                <label for="{{ form.amount.id_for_label }}">{{ form.amount.label }}</label>
+                                                {{ form.amount }}
+                                                {% if form.amount.errors %}
+                                                    <div class="text-danger">
+                                                        {% for error in form.amount.errors %}
+                                                            <small>{{ error }}</small>
+                                                        {% endfor %}
+                                                    </div>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="form-group">
+                                                <label for="{{ form.observation.id_for_label }}">{{ form.observation.label }}</label>
+                                                {{ form.observation }}
+                                                {% if form.observation.errors %}
+                                                    <div class="text-danger">
+                                                        {% for error in form.observation.errors %}
+                                                            <small>{{ error }}</small>
+                                                        {% endfor %}
+                                                    </div>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    {% if object %}
+                                        <div class="row">
+                                            <div class="col-md-6">
+                                                <div class="form-group">
+                                                    <label>Número de Depósito</label>
+                                                    <input type="text" class="form-control" value="{{ object.deposit_number }}" readonly>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <div class="form-group">
+                                                    <label>Estado</label>
+                                                    <input type="text" class="form-control" value="{{ object.get_status_display }}" readonly>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    {% endif %}
+                                </div>
+                                
+                                <div class="card-footer">
+                                    <div class="row">
+                                        <div class="col-12">
+                                            <div class="float-right">
+                                                <a href="{% url 'payments:deposit_order_list' %}" class="btn btn-secondary mr-2">
+                                                    <i class="fas fa-times mr-1"></i>Cancelar
+                                                </a>
+                                                <button type="submit" class="btn btn-primary">
+                                                    <i class="fas fa-save mr-1"></i>
+                                                    {% if object %}Actualizar{% else %}Crear{% endif %}
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Auto-generar monto en letras cuando cambie el monto
+        document.getElementById('{{ form.amount.id_for_label }}').addEventListener('input', function() {
+            const amount = parseFloat(this.value);
+            if (amount > 0) {
+                // Aquí podrías hacer una llamada AJAX para obtener el monto en letras
+                // Por ahora solo mostramos un mensaje
+                console.log('Monto:', amount);
+            }
+        });
+    </script>
+{% endblock body %}

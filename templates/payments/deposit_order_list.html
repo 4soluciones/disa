@@ -1,0 +1,1137 @@
+{% extends 'home.html' %}
+{% load static %}
+
+{% block title %}
+    Gestión de Depósitos
+{% endblock title %}
+
+{% block body %}
+    <div class="container-fluid pt-2 roboto-condensed-regular">
+        <!-- Content Header (Page header) -->
+        <div class="content-header">
+            <div class="container-fluid">
+                <div class="row mb-2">
+                    <div class="col-sm-6">
+                        <h1 class="m-0 text-dark">
+                            <i class="fas fa-university mr-2"></i>Gestión de Depósitos
+                            <small class="d-block text-muted mt-1">
+                                <i class="fas fa-calendar-day mr-1"></i>
+                                <span id="date-indicator">Mostrando depósitos del día de hoy</span>
+                            </small>
+                        </h1>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main content -->
+        <div class="content">
+            <div class="container-fluid">
+                <!-- Filtros de búsqueda -->
+                <div class="row">
+                    <div class="col-12">
+                        <div class="card card-secondary card-outline compact-filters">
+                            <div class="card-header compact-header">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div class="d-flex align-items-center">
+                                        <h6 class="card-title mb-0">
+                                            <i class="fas fa-search mr-2"></i>Filtros de Búsqueda
+                                        </h6>
+                                        {#                                        <button type="button" class="btn btn-success ml-3"#}
+                                        {#                                                onclick="openCreateDepositModal()">#}
+                                        {#                                            <i class="fas fa-plus mr-1"></i>Nuevo Depósito#}
+                                        {#                                        </button>#}
+                                        <button type="button" onclick="showModalNewDepositView('modal_deposit_create')"
+                                                class="btn btn-success ml-3" style="border-radius: 15px">
+                                            <i class="fas fa-plus mr-1"></i> Nueva Transacción
+                                        </button>
+                                        <button type="button" class="btn btn-info ml-2"
+                                                onclick="openEntitiesModal('modal_entities')"
+                                                title="Gestionar Entidades de Destino">
+                                            <i class="fas fa-university mr-1"></i>Entidades
+                                        </button>
+                                    </div>
+                                    <div class="card-tools">
+                                        <button type="button" class="btn btn-outline-secondary btn-sm"
+                                                id="toggle-filters" title="Colapsar/Expandir filtros">
+                                            <i class="fas fa-chevron-up" id="toggle-icon"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="card-body compact-body">
+                                <!-- Mensaje informativo compacto -->
+                                <div class="alert alert-info alert-sm mb-2" role="alert">
+                                    <i class="fas fa-info-circle mr-1"></i>
+                                    <small><strong>Por defecto se muestran los depósitos del día actual.</strong> Use
+                                        los
+                                        filtros para ver otros períodos. <strong>El filtro de cliente permite búsqueda
+                                            por nombre o documento con autocompletado.</strong></small>
+                                </div>
+
+                                <form id="search-form">
+                                    {% csrf_token %}
+                                    <div class="row g-2">
+                                        <div class="col-md-2">
+                                            <div class="form-group mb-1">
+                                                <label for="date-from" class="form-label-sm">Fecha Desde</label>
+                                                <input type="date" class="form-control form-control-sm"
+                                                       value="{{ date_now }}"
+                                                       id="date-from" name="date_from">
+                                            </div>
+                                        </div>
+                                        <div class="col-md-2">
+                                            <div class="form-group mb-1">
+                                                <label for="date-to" class="form-label-sm">Fecha Hasta</label>
+                                                <input type="date" class="form-control form-control-sm"
+                                                       value="{{ date_now }}"
+                                                       id="date-to" name="date_to">
+                                            </div>
+                                        </div>
+                                        <div class="col-md-2">
+                                            <div class="form-group mb-1">
+                                                <label for="deposit-number-search" class="form-label-sm">Nº Depósito</label>
+                                                <input type="text" class="form-control form-control-sm" autocomplete="off"
+                                                       id="deposit-number-search" name="deposit_number_search"
+                                                       placeholder="Ej: DEP-01-0001">
+                                            </div>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <div class="form-group mb-1">
+                                                <label for="client-search" class="form-label-sm">Buscar Cliente</label>
+                                                <div class="input-group">
+                                                    <input type="text" class="form-control form-control-sm"
+                                                           id="client-search" name="client_search"
+                                                           placeholder="Nombre o documento del cliente"
+                                                           autocomplete="off">
+                                                    <div class="input-group-append">
+                                                        <button type="button" class="btn btn-outline-secondary btn-sm"
+                                                                onclick="clearClientFilter()" title="Limpiar cliente">
+                                                            <i class="fas fa-times"></i>
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                                <input type="hidden" id="client-id-filter" name="client_id_filter"
+                                                       value="">
+                                                <div id="client-suggestions" class="client-suggestions"
+                                                     style="display: none;"></div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-2">
+                                            <div class="form-group mb-1">
+                                                <label for="subsidiary-filter" class="form-label-sm">Sucursal</label>
+                                                <select class="form-control form-control-sm" id="subsidiary-filter"
+                                                        name="subsidiary">
+                                                    <option value="0">Todas las sucursales</option>
+                                                    {% for subsidiary in subsidiary_set %}
+                                                        <option value="{{ subsidiary.id }}">{{ subsidiary.name }}</option>
+                                                    {% endfor %}
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-2">
+                                            <div class="form-group mb-1">
+                                                <label for="cashier-filter" class="form-label-sm">Cajero</label>
+                                                <select class="form-control form-control-sm" id="cashier-filter"
+                                                        name="cashier">
+                                                    <option value="0">Todos los cajeros</option>
+                                                    {% for user in user_set %}
+                                                        <option value="{{ user.id }}">{{ user.first_name }}</option>
+                                                    {% endfor %}
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-2">
+                                            <div class="form-group mb-1">
+                                                <label for="status-filter" class="form-label-sm">Estado</label>
+                                                <select class="form-control form-control-sm" id="status-filter"
+                                                        name="status">
+                                                    <option value="0">Todos los estados</option>
+                                                    <option value="P">Pendiente</option>
+                                                    <option value="C">Confirmado</option>
+                                                    <option value="A">Anulado</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="row mt-2">
+                                        <div class="col-12 text-center">
+                                            <button type="submit" class="btn btn-primary btn-sm mr-2">
+                                                <i class="fas fa-search mr-1"></i>Buscar
+                                            </button>
+                                            <button type="button" class="btn btn-secondary btn-sm" id="clear-filters">
+                                                <i class="fas fa-times mr-1"></i>Limpiar
+                                            </button>
+                                        </div>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Resultados -->
+                <div class="row">
+                    <div class="col-12">
+                        <div class="card">
+                            <div class="card-header">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <h3 class="card-title mb-0">
+                                        <i class="fas fa-list mr-2"></i>Listado de Depósitos
+                                        <small class="text-muted ml-2" id="deposits-count">
+                                            <i class="fas fa-info-circle mr-1"></i>
+                                            <span id="deposits-count-text">Cargando...</span>
+                                        </small>
+                                    </h3>
+                                    <div class="card-tools">
+                                        <button type="button" class="btn btn-outline-primary btn-sm"
+                                                onclick="loadDeposits()" title="Actualizar listado">
+                                            <i class="fas fa-refresh"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="card-body p-0">
+                                <div id="deposits-grid" class="w-100">
+                                    <!-- Aquí se cargará la grilla de depósitos -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+
+
+
+    <!-- Modal para crear nuevo depósito -->
+
+    <div class="modal fade" id="modal-deposit-create" tabindex="-1"
+         data-backdrop="static" data-keyboard="false"
+         aria-labelledby="ModalHelpTitle"
+         aria-hidden="true"></div>
+
+    <!-- Modal para gestionar entidades de destino -->
+
+    <div class="modal fade" id="modal-entities-destiny" tabindex="-1"
+         data-backdrop="static" data-keyboard="false"
+         aria-labelledby="ModalHelpTitle"
+         aria-hidden="true"></div>
+
+    <!-- Modal para confirmar depósito -->
+    <div class="modal fade" id="confirmDepositModal" tabindex="-1"
+         data-backdrop="static" data-keyboard="false"
+         aria-labelledby="ModalConfirmTitle"
+         aria-hidden="true">
+        <div class="modal-dialog modal-md roboto-condensed-regular" role="document">
+            <div class="modal-content">
+                <div class="modal-header bg-success text-white">
+                    <h5 class="modal-title">
+                        <i class="fas fa-check-circle mr-2"></i>Confirmar Depósito
+                    </h5>
+                    <button type="button" class="close text-white" data-dismiss="modal">
+                        <span>&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <form id="confirm-deposit-form" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        <input type="hidden" id="confirm_deposit_id" name="deposit_id">
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="confirm_user" class="form-label">
+                                        <i class="fas fa-user mr-1"></i>Usuario que Confirma <span class="text-danger">*</span>
+                                    </label>
+                                    <select class="form-control" id="confirm_user" name="confirmed_by" required>
+                                        <option value="">Seleccione usuario</option>
+                                        {% for user in user_set %}
+                                            <option value="{{ user.id }}">{{ user.first_name }} {{ user.last_name }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="deposit_photo" class="form-label">
+                                        <i class="fas fa-camera mr-1"></i>Foto del Comprobante
+                                    </label>
+                                    <input type="file" class="form-control" id="deposit_photo" name="photo" accept="image/*">
+                                    <small class="form-text text-muted">
+                                        Suba una foto del comprobante de depósito (opcional)
+                                    </small>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-12">
+                                <div class="form-group">
+                                    <label for="confirm_observation" class="form-label">
+                                        <i class="fas fa-comment mr-1"></i>Observación de Confirmación
+                                    </label>
+                                    <textarea class="form-control" id="confirm_observation" name="observation" rows="3"
+                                              placeholder="Observaciones adicionales sobre la confirmación"></textarea>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">
+                        <i class="fas fa-times mr-1"></i>Cancelar
+                    </button>
+                    <button type="button" class="btn btn-success" onclick="saveDepositConfirmation()">
+                        <i class="fas fa-check mr-1"></i>Confirmar Depósito
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal para ver detalles del depósito -->
+    <div class="modal fade" id="viewDepositModal" tabindex="-1"
+         data-backdrop="static" data-keyboard="false"
+         aria-labelledby="ModalViewTitle"
+         aria-hidden="true">
+        <div class="modal-dialog modal-lg roboto-condensed-regular" role="document">
+            <div class="modal-content">
+                <div class="modal-header bg-info text-white">
+                    <h5 class="modal-title">
+                        <i class="fas fa-eye mr-2"></i>Detalles del Depósito
+                    </h5>
+                    <button type="button" class="close text-white" data-dismiss="modal">
+                        <span>&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body" id="deposit-details-content">
+                    <!-- Aquí se cargarán los detalles del depósito -->
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">
+                        <i class="fas fa-times mr-1"></i>Cerrar
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <style>
+        /* Estilos para autocompletado de clientes */
+        .client-autocomplete-results {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: white;
+            border: 1px solid #ddd;
+            border-top: none;
+            border-radius: 0 0 12px 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            z-index: 1000;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        .client-suggestion-item {
+            padding: 12px 16px;
+            cursor: pointer;
+            border-bottom: 1px solid #eee;
+            transition: all 0.2s ease;
+        }
+
+        .client-suggestion-item:hover {
+            background-color: #f8f9fa;
+            transform: translateX(2px);
+        }
+
+        .client-suggestion-item:last-child {
+            border-bottom: none;
+        }
+
+        .client-autocomplete-loading {
+            padding: 12px 16px;
+            text-align: center;
+            color: #6c757d;
+            font-style: italic;
+        }
+
+        .client-autocomplete-no-results {
+            padding: 12px 16px;
+            text-align: center;
+            color: #6c757d;
+            font-style: italic;
+        }
+
+        .client-selected {
+            background-color: #e8f5e8 !important;
+            border-color: #28a745 !important;
+        }
+
+        /* Estilos para filtros compactos */
+        .compact-filters .card-header {
+            padding: 0.75rem 1rem;
+            background-color: #f8f9fa;
+            border-bottom: 1px solid #dee2e6;
+        }
+
+        .compact-filters .card-body {
+            padding: 1rem;
+        }
+
+        .form-label-sm {
+            font-size: 0.875rem;
+            font-weight: 500;
+            margin-bottom: 0.25rem;
+        }
+
+        .alert-sm {
+            padding: 0.5rem 0.75rem;
+            font-size: 0.875rem;
+        }
+
+        /* Estilos para select de filtros */
+        .form-control-sm {
+            border-radius: 8px;
+            border: 1px solid #ced4da;
+            padding: 8px 12px;
+            font-size: 0.875rem;
+            line-height: 1.4;
+            min-height: 36px;
+            height: auto;
+            background-color: #fff;
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23343a40' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m1 6 7 7 7-7'/%3e%3c/svg%3e");
+            background-repeat: no-repeat;
+            background-position: right 8px center;
+            background-size: 12px 8px;
+            padding-right: 28px;
+        }
+
+        .form-control-sm:focus {
+            border-color: #007bff;
+            box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+            outline: none;
+        }
+
+        .form-control-sm option {
+            padding: 6px 8px;
+            font-size: 0.875rem;
+            line-height: 1.4;
+        }
+
+        /* Estilos redondeados para inputs del modal */
+        .modal .form-control {
+            border-radius: 12px;
+            border: 2px solid #e9ecef;
+            padding: 8px 16px;
+            font-size: 0.95rem;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        }
+
+        .modal .form-control:focus {
+            border-color: #007bff;
+            box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+            transform: translateY(-1px);
+        }
+
+        .modal .form-control:hover {
+            border-color: #ced4da;
+            transform: translateY(-1px);
+        }
+
+        .modal .form-select {
+            border-radius: 12px;
+            border: 2px solid #e9ecef;
+            padding: 16px 20px;
+            font-size: 1rem;
+            font-weight: 500;
+            line-height: 1.5;
+            min-height: 52px;
+            height: auto;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+            background-color: #fff;
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23343a40' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m1 6 7 7 7-7'/%3e%3c/svg%3e");
+            background-repeat: no-repeat;
+            background-position: right 16px center;
+            background-size: 16px 12px;
+            padding-right: 48px;
+            width: 100%;
+            appearance: none;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            color: #495057;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+        }
+
+        .modal .form-select:focus {
+            border-color: #007bff;
+            box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+            transform: translateY(-1px);
+            outline: none;
+        }
+
+        .modal .form-select:hover {
+            border-color: #ced4da;
+            transform: translateY(-1px);
+        }
+
+        .modal .form-select option {
+            padding: 12px 16px;
+            font-size: 1rem;
+            font-weight: 500;
+            line-height: 1.5;
+            height: auto;
+            min-height: 44px;
+            color: #495057;
+            background-color: #fff;
+            border: none;
+        }
+
+        /* Asegurar que el texto del select no se corte */
+        .modal .form-select {
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            overflow: hidden;
+        }
+
+        .modal .form-select:focus {
+            white-space: normal;
+            overflow: visible;
+        }
+
+        /* Estilos específicos para mejorar la visibilidad del texto */
+        .modal .form-select,
+        .modal .form-select option {
+            letter-spacing: 0.3px;
+            text-transform: uppercase;
+        }
+
+        /* Estilos específicos para el select de tipo de depósito */
+        #type_deposit {
+            letter-spacing: 0.5px;
+            color: #2c3e50;
+        }
+
+        #type_deposit option {
+            letter-spacing: 0.5px;
+            color: #2c3e50;
+        }
+
+        select.form-control {
+            border-radius: 10px !important;
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3e%3c/svg%3e");
+            background-position: right 0.75rem center;
+            background-repeat: no-repeat;
+            background-size: 1.5em 1.5em;
+            padding-right: 2.5rem;
+        }
+
+        /* Estilos para todos los select del modal */
+        .modal select.form-control {
+            color: #2c3e50;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+        }
+
+        .modal select.form-control option {
+            color: #2c3e50;
+            background-color: #fff;
+        }
+
+        .modal .btn {
+            border-radius: 10px;
+            padding: 10px 20px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .modal .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+        }
+
+        .modal .btn:active {
+            transform: translateY(0);
+        }
+
+        .modal .input-group .form-control {
+            border-radius: 12px 0 0 12px;
+        }
+
+        .modal .input-group .btn {
+            border-radius: 0 12px 12px 0;
+        }
+
+        .modal .input-group .input-group-text {
+            border-radius: 12px 0 0 12px;
+            border: 2px solid #e9ecef;
+            background-color: #f8f9fa;
+            font-weight: 500;
+        }
+
+        .modal .card {
+            border-radius: 16px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            border: none;
+        }
+
+        .modal .card-header {
+            border-radius: 16px 16px 0 0;
+            border-bottom: 2px solid #e9ecef;
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+        }
+
+        .modal .alert {
+            border-radius: 12px;
+            border: none;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        }
+
+        .modal .modal-content {
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            border: none;
+        }
+
+        .modal .modal-header {
+            border-radius: 20px 20px 0 0;
+            border-bottom: 2px solid #e9ecef;
+        }
+
+        .modal .modal-footer {
+            border-radius: 0 0 20px 20px;
+            border-top: 2px solid #e9ecef;
+        }
+
+        /* Estilos específicos para el modal de entidades */
+        .form-check-input:checked {
+            background-color: #28a745;
+            border-color: #28a745;
+        }
+
+        .form-check-input:focus {
+            border-color: #28a745;
+            outline: 0;
+            box-shadow: 0 0 0 0.2rem rgba(40, 167, 69, 0.25);
+        }
+
+        .table-hover tbody tr:hover {
+            background-color: rgba(0, 123, 255, 0.05);
+        }
+
+        .badge-status {
+            font-size: 0.75rem;
+            padding: 0.375rem 0.75rem;
+            border-radius: 50px;
+        }
+
+        .badge-active {
+            background-color: #28a745;
+            color: white;
+        }
+
+        .badge-inactive {
+            background-color: #6c757d;
+            color: white;
+        }
+
+        .btn-action {
+            padding: 0.25rem 0.5rem;
+            font-size: 0.875rem;
+            border-radius: 0.375rem;
+            margin: 0 0.125rem;
+        }
+
+        .btn-edit {
+            background-color: #17a2b8;
+            border-color: #17a2b8;
+            color: white;
+        }
+
+        .btn-edit:hover {
+            background-color: #138496;
+            border-color: #117a8b;
+            color: white;
+        }
+
+        .btn-delete {
+            background-color: #dc3545;
+            border-color: #dc3545;
+            color: white;
+        }
+
+        .btn-delete:hover {
+            background-color: #c82333;
+            border-color: #bd2130;
+            color: white;
+        }
+
+        .text-uppercase {
+            text-transform: uppercase;
+        }
+
+        .form-control.text-uppercase {
+            text-transform: uppercase;
+        }
+
+        /* Estilos para modales elegantes y compactos */
+        #confirmDepositModal .modal-content,
+        #viewDepositModal .modal-content {
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            border: none;
+        }
+
+        #confirmDepositModal .modal-header,
+        #viewDepositModal .modal-header {
+            border-radius: 15px 15px 0 0;
+            border-bottom: 2px solid rgba(255, 255, 255, 0.2);
+            padding: 1rem 1.5rem;
+        }
+
+        #confirmDepositModal .modal-body,
+        #viewDepositModal .modal-body {
+            padding: 1.5rem;
+            font-size: 0.9rem;
+        }
+
+        #confirmDepositModal .modal-footer,
+        #viewDepositModal .modal-footer {
+            border-radius: 0 0 15px 15px;
+            border-top: 2px solid #e9ecef;
+            padding: 1rem 1.5rem;
+        }
+
+        #confirmDepositModal .modal-title,
+        #viewDepositModal .modal-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+        }
+
+        #confirmDepositModal .form-label,
+        #viewDepositModal .form-label {
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-bottom: 0.4rem;
+            color: #495057;
+        }
+
+        #confirmDepositModal .form-control,
+        #viewDepositModal .form-control {
+            font-size: 0.85rem;
+            padding: 0.6rem 0.8rem;
+            border-radius: 8px;
+            border: 1px solid #ced4da;
+            transition: all 0.2s ease;
+        }
+
+        #confirmDepositModal .form-control:focus,
+        #viewDepositModal .form-control:focus {
+            border-color: #007bff;
+            box-shadow: 0 0 0 0.15rem rgba(0, 123, 255, 0.25);
+        }
+
+        #confirmDepositModal .btn,
+        #viewDepositModal .btn {
+            font-size: 0.85rem;
+            padding: 0.6rem 1.2rem;
+            border-radius: 8px;
+            font-weight: 500;
+            transition: all 0.2s ease;
+        }
+
+        #confirmDepositModal .btn:hover,
+        #viewDepositModal .btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+        }
+
+        #confirmDepositModal .form-text,
+        #viewDepositModal .form-text {
+            font-size: 0.75rem;
+            color: #6c757d;
+        }
+
+        /* Estilos específicos para el modal de detalles */
+        #viewDepositModal .card {
+            border-radius: 10px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            border: none;
+            margin-bottom: 1rem;
+        }
+
+        #viewDepositModal .card-header {
+            border-radius: 10px 10px 0 0;
+            padding: 0.8rem 1rem;
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
+
+        #viewDepositModal .card-body {
+            padding: 1rem;
+            font-size: 0.85rem;
+        }
+
+        #viewDepositModal .card-body strong {
+            font-size: 0.8rem;
+            color: #495057;
+        }
+
+        #viewDepositModal .badge {
+            font-size: 0.7rem;
+            padding: 0.3rem 0.6rem;
+        }
+
+        #viewDepositModal .h4 {
+            font-size: 1.3rem;
+        }
+
+        #viewDepositModal .img-fluid {
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        /* Animaciones suaves */
+        #confirmDepositModal .modal-content,
+        #viewDepositModal .modal-content {
+            animation: modalSlideIn 0.3s ease-out;
+        }
+
+        @keyframes modalSlideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+    </style>
+
+{% endblock body %}
+
+{% block extrajs %}
+
+    <script>
+
+        let currentPage = 1;
+        let totalPages = 1;
+        let isLoading = false;
+
+        $(document).ready(function () {
+            // Prevenir el envío tradicional del formulario y usar AJAX
+            $('#search-form').on('submit', function (e) {
+                e.preventDefault();
+                loadDeposits();
+            });
+
+            loadDeposits();
+        });
+
+        function showModalNewDepositView(route) {
+            $.ajax({
+                url: '/payments/' + route + '/',
+                dataType: 'json',
+                type: 'GET',
+                data: {'pk': 1},
+                success: function (response) {
+                    $('#modal-deposit-create').html(response.form);
+                    $('#modal-deposit-create').modal('show');
+                    $('#modal-deposit-create').on('shown.bs.modal', function (e) {
+                        updateSerialDeposit();
+                        // Remover el listener para evitar múltiples ejecuciones
+                        $(this).off('shown.bs.modal');
+                    });
+                },
+                fail: function (response) {
+                    toastr.error('Error en la petición', '¡Mensaje!');
+                }
+            });
+        }
+
+        function openEntitiesModal(route) {
+            $.ajax({
+                url: '/payments/' + route + '/',
+                dataType: 'json',
+                type: 'GET',
+                data: {'pk': 1},
+                success: function (response) {
+                    $('#modal-entities-destiny').html(response.form);
+                    $('#modal-entities-destiny').modal('show');
+                    updateSerialDeposit();
+                },
+                fail: function (response) {
+                    toastr.error('Error en la petición', '¡Mensaje!');
+                }
+            });
+        }
+
+        function updateSerialDeposit() {
+            const typeDeposit = $('#type_deposit').val();
+            const subsidiaryId = $('#origin_subsidiary_id').val() || '{{ user.subsidiary.id }}' || '1';
+
+            if (typeDeposit && subsidiaryId) {
+                $.ajax({
+                    url: '/payments/get_next_serial/',
+                    method: 'GET',
+                    data: {
+                        type_deposit: typeDeposit,
+                        subsidiary_id: subsidiaryId
+                    },
+                    success: function (response) {
+                        if (response.success) {
+                            $('#serial_display').val(response.serial);
+                            $('#correlative_display').val(response.correlative);
+                        } else {
+                            toastr.error('Error al generar la numeración: ' + response.message);
+                        }
+                    },
+                    error: function (xhr) {
+                        toastr.error('Error al generar la numeración');
+                    }
+                });
+            } else {
+                $('#serial_display').val('');
+                $('#correlative_display').val('');
+            }
+        }
+
+        $('#client-search').on('input', function () {
+            const searchTerm = $(this).val();
+            if (searchTerm.length >= 2) {
+                searchClientsForFilters(searchTerm);
+            } else {
+                $('#client-suggestions').hide();
+                $('#client-id-filter').val('');
+            }
+        });
+
+        function searchClientsForFilters(searchTerm) {
+            if (searchTerm.length < 2) {
+                $('#client-suggestions').hide();
+                return;
+            }
+
+            $.ajax({
+                url: '/payments/search_clients_autocomplete/',
+                type: 'GET',
+                data: {
+                    'search': searchTerm
+                },
+                success: function (response) {
+                    if (response.success && response.clients.length > 0) {
+                        displayClientSuggestionsForFilters(response.clients);
+                        $('#client-suggestions').show();
+                    } else {
+                        $('#client-suggestions').hide();
+                    }
+                },
+                error: function () {
+                    $('#client-suggestions').hide();
+                }
+            });
+        }
+
+        function displayClientSuggestionsForFilters(clients) {
+            let html = '';
+            clients.forEach(client => {
+                const documentType = client.document === '01' ? 'DNI' :
+                    client.document === '06' ? 'RUC' : 'S/D';
+                html += `
+                    <div class="client-suggestion-item" style="background-color: #d3e3d5"
+                         onclick="selectClientForFilters(${client.id}, '${client.full_name}', '${documentType}: ${client.number}')">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <strong class="text-primary">${client.full_name}</strong>
+                                <br><small class="text-muted">${documentType}: ${client.number}</small>
+                                ${client.phone ? `<br><small class="text-muted"><i class="fas fa-phone mr-1"></i>${client.phone}</small>` : ''}
+                            </div>
+                            <div class="text-right">
+                                <small class="text-info">${client.address || 'Sin dirección'}</small>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+            $('#client-suggestions').html(html);
+        }
+
+        function selectClientForFilters(clientId, clientName, clientDocument) {
+            $('#client-id-filter').val(clientId);
+            $('#client-search').val(`${clientName} - ${clientDocument}`);
+            $('#client-suggestions').hide();
+
+            // Agregar indicador visual de cliente seleccionado
+            $('#client-search').addClass('is-valid');
+            $('#client-search').removeClass('is-invalid');
+        }
+
+
+        function loadDeposits(page = 1) {
+            if (isLoading) return;
+
+            isLoading = true;
+            $('#deposits-count-text').text('Cargando...');
+
+            const formData = $('#search-form').serialize();
+
+            $.ajax({
+                url: '/payments/deposit_order_list/',
+                method: 'POST',
+                data: formData,
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'X-CSRFToken': $('input[name=csrfmiddlewaretoken]').val()
+                },
+                success: function (response) {
+                    $('#deposits-grid').html(response.grid);
+                    $('#deposits-count-text').text('Depósitos cargados');
+                    isLoading = false;
+                },
+                error: function () {
+                    $('#deposits-count-text').text('Error al cargar');
+                    isLoading = false;
+                }
+            });
+        }
+
+        function changeDepositStatus(depositId, newStatus) {
+            if (newStatus === 'C') {
+                // Si se selecciona confirmado, abrir modal de confirmación
+                $('#confirm_deposit_id').val(depositId);
+                $('#confirmDepositModal').modal('show');
+            } else if (newStatus === 'A') {
+                // Si se selecciona anulado, pedir motivo
+                const reason = prompt('Ingrese el motivo de la anulación:');
+                if (reason && reason.trim()) {
+                    updateDepositStatus(depositId, newStatus, reason.trim());
+                } else {
+                    // Revertir el select al estado anterior
+                    loadDeposits();
+                    return;
+                }
+            } else {
+                // Para pendiente, actualizar directamente
+                updateDepositStatus(depositId, newStatus);
+            }
+        }
+
+        function updateDepositStatus(depositId, status, reason = '') {
+            $.ajax({
+                url: '/payments/update_deposit_status/',
+                method: 'POST',
+                data: {
+                    'deposit_id': depositId,
+                    'status': status,
+                    'reason': reason,
+                    'csrfmiddlewaretoken': $('input[name=csrfmiddlewaretoken]').val()
+                },
+                success: function (response) {
+                    if (response.success) {
+                        toastr.success(response.message);
+                        loadDeposits(); // Recargar la grilla
+                    } else {
+                        toastr.error(response.message);
+                        loadDeposits(); // Recargar para revertir cambios
+                    }
+                },
+                error: function () {
+                    toastr.error('Error al actualizar el estado del depósito');
+                    loadDeposits(); // Recargar para revertir cambios
+                }
+            });
+        }
+
+        function saveDepositConfirmation() {
+            const formData = new FormData($('#confirm-deposit-form')[0]);
+            
+            // Validar que se haya seleccionado un usuario
+            const confirmedBy = $('#confirm_user').val();
+            if (!confirmedBy) {
+                toastr.error('Debe seleccionar un usuario que confirme el depósito', 'Error de Validación');
+                $('#confirm_user').focus();
+                return;
+            }
+
+            $.ajax({
+                url: '/payments/confirm_deposit/',
+                method: 'POST',
+                data: formData,
+                processData: false,
+                contentType: false,
+                headers: {
+                    'X-CSRFToken': $('input[name=csrfmiddlewaretoken]').val()
+                },
+                success: function (response) {
+                    if (response.success) {
+                        toastr.success(response.message);
+                        $('#confirmDepositModal').modal('hide');
+                        $('#confirm-deposit-form')[0].reset();
+                        loadDeposits(); // Recargar la grilla
+                    } else {
+                        toastr.error(response.message);
+                    }
+                },
+                error: function (xhr) {
+                    const response = xhr.responseJSON;
+                    if (response && response.message) {
+                        toastr.error(response.message);
+                    } else {
+                        toastr.error('Error al confirmar el depósito');
+                    }
+                }
+            });
+        }
+
+        function viewDeposit(depositId) {
+            $.ajax({
+                url: '/payments/view_deposit/',
+                method: 'GET',
+                data: {
+                    'deposit_id': depositId
+                },
+                success: function (response) {
+                    if (response.success) {
+                        $('#deposit-details-content').html(response.html);
+                        $('#viewDepositModal').modal('show');
+                    } else {
+                        toastr.error(response.message);
+                    }
+                },
+                error: function () {
+                    toastr.error('Error al cargar los detalles del depósito');
+                }
+            });
+        }
+
+        function downloadDepositPDF(depositId) {
+            // Crear un enlace temporal para descargar el PDF
+            const downloadUrl = `/payments/download_deposit_pdf/${depositId}/`;
+            
+            // Crear un elemento <a> temporal
+            const link = document.createElement('a');
+            link.href = downloadUrl;
+            link.download = `Deposito_${depositId}.pdf`;
+            
+            // Agregar el enlace al DOM temporalmente y hacer clic
+            document.body.appendChild(link);
+            link.click();
+            
+            // Remover el enlace del DOM
+            document.body.removeChild(link);
+            
+            // Mostrar mensaje de éxito
+            toastr.success('Descargando PDF del depósito...');
+        }
+
+
+    </script>
+{% endblock extrajs %}

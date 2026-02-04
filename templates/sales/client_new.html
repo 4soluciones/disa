@@ -1,0 +1,371 @@
+{% load static %}
+<div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+    <div class="modal-content border-0 shadow roboto-condensed-regular">
+        <div id="modal-loader" class="overlay" style="display: none; z-index: 1050;">
+            <i class="fas fa-3x fa-sync fa-spin text-primary"></i>
+        </div>
+
+        <!-- Header del Modal -->
+        <div class="modal-header" style="
+            background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+            color: white;
+            border: none;
+            padding: 24px;">
+            <div>
+                <h5 class="modal-title font-weight-bold mb-1">
+                    <i class="fas fa-user-plus mr-2"></i>Registrar Nuevo Cliente
+                </h5>
+                <small style="opacity: 0.9;">Completa el formulario para agregar un nuevo cliente a tu base de datos</small>
+            </div>
+            <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close" style="opacity: 0.8;">
+                <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
+
+        <form id="form-client-new" action="{% url 'apps.sales:save_client' %}" method="POST" enctype="multipart/form-data">
+            {% csrf_token %}
+            <input type="hidden" id="client-id" name="client-id">
+
+            <div class="modal-body p-4" style="max-height: 70vh; overflow-y: auto;">
+                
+                <!-- Sección 1: Tipo de Documento -->
+                <div class="mb-4">
+                    <div class="card border-0" style="
+                        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+                        border-radius: 12px;
+                        overflow: hidden;">
+                        <div class="card-header border-0 px-4 py-3" style="background: none; border-bottom: 1px solid #e0e6ed;">
+                            <h6 class="mb-0 font-weight-bold" style="color: #2d3748;">
+                                <i class="fas fa-id-card mr-2" style="color: #0066cc;"></i>Tipo de Documento
+                            </h6>
+                        </div>
+                        <div class="card-body px-4 py-3">
+                            <div class="row">
+                                <div class="col-md-4">
+                                    <div class="form-group mb-0">
+                                        <label class="small font-weight-bold" style="color: #6c7a99; text-transform: uppercase; letter-spacing: 0.5px;">
+                                            <i class="fas fa-tag mr-1"></i>Documento <span class="text-danger">*</span>
+                                        </label>
+                                        <select class="form-control" id="type_client" name="type-client" style="border-radius: 6px; border: 1px solid #e0e6ed;">
+                                            <option value="01">DNI - Documento de Identidad</option>
+                                            <option value="06">RUC - Registro Único de Contribuyente</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="col-md-8">
+                                    <div class="form-group mb-0">
+                                        <label class="small font-weight-bold" style="color: #6c7a99; text-transform: uppercase; letter-spacing: 0.5px;">
+                                            <i class="fas fa-hashtag mr-1"></i>Número <span class="text-danger">*</span>
+                                        </label>
+                                        <div class="input-group" style="border-radius: 6px; overflow: hidden;">
+                                            <input type="text" class="form-control" id="client_number"
+                                                   name="client-number" required
+                                                   placeholder="Ingrese el número del documento"
+                                                   style="border-radius: 6px; border: 1px solid #e0e6ed;">
+                                            <div class="input-group-append">
+                                                <button type="button" class="btn" onclick="searchClientAPI()" 
+                                                        style="
+                                                            background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+                                                            color: white;
+                                                            border: none;
+                                                            border-radius: 0 6px 6px 0;">
+                                                    <i class="fas fa-search mr-1"></i>Buscar
+                                                </button>
+                                            </div>
+                                        </div>
+                                        <small style="color: #a0aec0; margin-top: 6px; display: block;">
+                                            <i class="fas fa-info-circle mr-1"></i>Se buscará automáticamente en el sistema externo
+                                        </small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Sección 2: Información Personal (DNI) -->
+                <div class="mb-4 dni-section">
+                    <div class="card border-0" style="
+                        background: linear-gradient(135deg, #e7f1ff 0%, #f0f7ff 100%);
+                        border-radius: 12px;
+                        overflow: hidden;
+                        border-left: 4px solid #0066cc;">
+                        <div class="card-header border-0 px-4 py-3" style="background: none; border-bottom: 1px solid #d0dff5;">
+                            <h6 class="mb-0 font-weight-bold" style="color: #2d3748;">
+                                <i class="fas fa-user mr-2" style="color: #0066cc;"></i>Información Personal
+                            </h6>
+                        </div>
+                        <div class="card-body px-4 py-3">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label class="small font-weight-bold" style="color: #6c7a99; text-transform: uppercase; letter-spacing: 0.5px;">
+                                            <i class="fas fa-user mr-1"></i>Primer Nombre <span class="text-danger">*</span>
+                                        </label>
+                                        <input type="text" class="form-control" id="first_name" 
+                                               name="first-name" required
+                                               style="border-radius: 6px; border: 1px solid #d0dff5;">
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label class="small font-weight-bold" style="color: #6c7a99; text-transform: uppercase; letter-spacing: 0.5px;">
+                                            <i class="fas fa-user mr-1"></i>Segundo Nombre
+                                        </label>
+                                        <input type="text" class="form-control" id="second_name" 
+                                               name="second-name"
+                                               style="border-radius: 6px; border: 1px solid #d0dff5;">
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label class="small font-weight-bold" style="color: #6c7a99; text-transform: uppercase; letter-spacing: 0.5px;">
+                                            <i class="fas fa-user mr-1"></i>Primer Apellido <span class="text-danger">*</span>
+                                        </label>
+                                        <input type="text" class="form-control" id="surname" 
+                                               name="surname" required
+                                               style="border-radius: 6px; border: 1px solid #d0dff5;">
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label class="small font-weight-bold" style="color: #6c7a99; text-transform: uppercase; letter-spacing: 0.5px;">
+                                            <i class="fas fa-user mr-1"></i>Segundo Apellido
+                                        </label>
+                                        <input type="text" class="form-control" id="second_surname" 
+                                               name="second-surname"
+                                               style="border-radius: 6px; border: 1px solid #d0dff5;">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Sección 3: Información Empresarial (RUC) -->
+                <div class="mb-4 ruc-section d-none">
+                    <div class="card border-0" style="
+                        background: linear-gradient(135deg, #f0f7e7 0%, #f7ffe7 100%);
+                        border-radius: 12px;
+                        overflow: hidden;
+                        border-left: 4px solid #66cc00;">
+                        <div class="card-header border-0 px-4 py-3" style="background: none; border-bottom: 1px solid #c6e98a;">
+                            <h6 class="mb-0 font-weight-bold" style="color: #2d3748;">
+                                <i class="fas fa-building mr-2" style="color: #66cc00;"></i>Información Empresarial
+                            </h6>
+                        </div>
+                        <div class="card-body px-4 py-3">
+                            <div class="form-group mb-0">
+                                <label class="small font-weight-bold" style="color: #6c7a99; text-transform: uppercase; letter-spacing: 0.5px;">
+                                    <i class="fas fa-building mr-1"></i>Razón Social <span class="text-danger">*</span>
+                                </label>
+                                <input type="text" class="form-control" id="business_name"
+                                       name="business-name" placeholder="Ingrese la razón social"
+                                       style="border-radius: 6px; border: 1px solid #c6e98a;">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Sección 4: Información de Contacto -->
+                <div class="mb-4">
+                    <div class="card border-0" style="
+                        background: linear-gradient(135deg, #fff4e7 0%, #fffbf0 100%);
+                        border-radius: 12px;
+                        overflow: hidden;
+                        border-left: 4px solid #ff9900;">
+                        <div class="card-header border-0 px-4 py-3" style="background: none; border-bottom: 1px solid #ffd966;">
+                            <h6 class="mb-0 font-weight-bold" style="color: #2d3748;">
+                                <i class="fas fa-phone mr-2" style="color: #ff9900;"></i>Información de Contacto
+                            </h6>
+                        </div>
+                        <div class="card-body px-4 py-3">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label class="small font-weight-bold" style="color: #6c7a99; text-transform: uppercase; letter-spacing: 0.5px;">
+                                            <i class="fas fa-phone mr-1"></i>Teléfono Principal
+                                        </label>
+                                        <input type="tel" class="form-control" id="client_phone1"
+                                               name="client-phone1"
+                                               style="border-radius: 6px; border: 1px solid #ffd966;">
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label class="small font-weight-bold" style="color: #6c7a99; text-transform: uppercase; letter-spacing: 0.5px;">
+                                            <i class="fas fa-envelope mr-1"></i>Correo Electrónico
+                                        </label>
+                                        <input type="email" class="form-control" id="client_email"
+                                               name="client-email"
+                                               style="border-radius: 6px; border: 1px solid #ffd966;">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Sección 5: Información Adicional -->
+                <div class="mb-4">
+                    <div class="card border-0" style="
+                        background: linear-gradient(135deg, #f0e7ff 0%, #f7f0ff 100%);
+                        border-radius: 12px;
+                        overflow: hidden;
+                        border-left: 4px solid #7c3aed;">
+                        <div class="card-header border-0 px-4 py-3" style="background: none; border-bottom: 1px solid #ddd6fe;">
+                            <h6 class="mb-0 font-weight-bold" style="color: #2d3748;">
+                                <i class="fas fa-plus-circle mr-2" style="color: #7c3aed;"></i>Información Adicional
+                            </h6>
+                        </div>
+                        <div class="card-body px-4 py-3">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label class="small font-weight-bold" style="color: #6c7a99; text-transform: uppercase; letter-spacing: 0.5px;">
+                                            <i class="fas fa-briefcase mr-1"></i>Ocupación
+                                        </label>
+                                        <input type="text" class="form-control" id="client_occupation"
+                                               name="client-occupation"
+                                               placeholder="Ej: Ingeniero, Comerciante..."
+                                               style="border-radius: 6px; border: 1px solid #ddd6fe;">
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label class="small font-weight-bold" style="color: #6c7a99; text-transform: uppercase; letter-spacing: 0.5px;">
+                                            <i class="fas fa-map-marker-alt mr-1"></i>Dirección
+                                        </label>
+                                        <input type="text" class="form-control" id="client_address"
+                                               name="client-address"
+                                               placeholder="Dirección completa"
+                                               style="border-radius: 6px; border: 1px solid #ddd6fe;">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Footer del Modal -->
+            <div class="modal-footer border-top" style="background: #fafbfc; padding: 20px;">
+                <button type="button" class="btn btn-outline-secondary" data-dismiss="modal" style="border-radius: 6px;">
+                    <i class="fas fa-times mr-2"></i>Cancelar
+                </button>
+                <button type="submit" class="btn btn-primary" style="
+                    background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+                    border: none;
+                    border-radius: 6px;">
+                    <i class="fas fa-save mr-2"></i>Guardar Cliente
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+$(document).ready(function () {
+    // Cambiar entre secciones DNI y RUC
+    $('#type_client').on('change', function () {
+        if ($(this).val() === '06') {
+            $('.dni-section').addClass('d-none');
+            $('.ruc-section').removeClass('d-none');
+        } else {
+            $('.dni-section').removeClass('d-none');
+            $('.ruc-section').addClass('d-none');
+        }
+    });
+
+    // Enviar formulario
+    $('#form-client-new').on('submit', function (e) {
+        e.preventDefault();
+        
+        const formData = new FormData(this);
+        $('#modal-loader').show();
+
+        $.ajax({
+            url: $(this).attr('action'),
+            type: 'POST',
+            data: formData,
+            processData: false,
+            contentType: false,
+            success: function (response) {
+                $('#modal-loader').hide();
+                if (response.success) {
+                    toastr.success(response.message, 'Éxito');
+                    $('#modal-client-create').modal('hide');
+                    setTimeout(() => location.reload(), 1500);
+                } else {
+                    toastr.error(response.message || 'Error al guardar', 'Error');
+                }
+            },
+            error: function (error) {
+                $('#modal-loader').hide();
+                toastr.error('Error en la petición', 'Error');
+            }
+        });
+    });
+});
+
+function searchClientAPI() {
+    const documentType = $('#type_client').val();
+    const documentNumber = $('#client_number').val();
+
+    if (!documentNumber) {
+        toastr.warning('Ingrese un número de documento', 'Advertencia');
+        return;
+    }
+
+    $.ajax({
+        url: '/sales/get_api_person/',
+        type: 'GET',
+        data: {
+            'type': documentType,
+            'nro_document': documentNumber
+        },
+        success: function (response) {
+            if (response.pk) {
+                $('#first_name').val(response.firstName);
+                $('#second_name').val(response.secondName);
+                $('#surname').val(response.surname);
+                $('#second_surname').val(response.secondSurname);
+                $('#client_phone1').val(response.phone1);
+                $('#client_email').val(response.email);
+                $('#client_occupation').val(response.occupation);
+                $('#client_address').val(response.address);
+                toastr.success(response.message, 'Información encontrada');
+            }
+        },
+        error: function () {
+            toastr.info('No se encontraron datos en el sistema externo', 'Información');
+        }
+    });
+}
+</script>
+
+<style>
+    .modal-dialog {
+        border-radius: 12px;
+    }
+
+    .modal-content {
+        border-radius: 12px;
+    }
+
+    .form-control:focus {
+        border-color: #007bff;
+        box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+    }
+
+    .btn {
+        border-radius: 6px;
+        font-weight: 500;
+        transition: all 0.2s ease;
+    }
+
+    .btn:hover {
+        transform: translateY(-1px);
+    }
+</style>
