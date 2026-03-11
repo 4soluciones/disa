@@ -1324,12 +1324,12 @@
                                         <i class="fas fa-table mr-2"></i>
                                         Órdenes Recientes
                                     </h3>
-                                    <div class="card-tools">
-                                        <a href="{% url 'apps.sales:order_list' %}" class="btn btn-primary btn-sm">
-                                            <i class="fas fa-external-link-alt mr-1"></i>
-                                            Ver Todas
-                                        </a>
-                                    </div>
+{#                                    <div class="card-tools">#}
+{#                                        <a href="{% url 'apps.sales:order_list' %}" class="btn btn-primary btn-sm">#}
+{#                                            <i class="fas fa-external-link-alt mr-1"></i>#}
+{#                                            Ver Todas#}
+{#                                        </a>#}
+{#                                    </div>#}
                                 </div>
                                 <div class="card-body">
                                     <div class="table-responsive">
@@ -1476,72 +1476,6 @@
             loadCharts();
         }
 
-        function loadDashboardStats() {
-            // Mostrar indicador de carga
-            $('#total-orders').html('<div class="loading-spinner"></div>');
-            $('#completed-orders').html('<div class="loading-spinner"></div>');
-            $('#pending-orders').html('<div class="loading-spinner"></div>');
-            $('#total-sales').html('<div class="loading-spinner"></div>');
-
-            $.ajax({
-                url: '{% url "apps.sales:dashboard_stats" %}',
-                method: 'GET',
-                success: function (response) {
-                    if (response.success) {
-                        $('#total-orders').text(response.stats.total_orders);
-                        $('#completed-orders').text(response.stats.completed_orders);
-                        $('#pending-orders').text(response.stats.pending_orders);
-                        $('#total-sales').text('S/ ' + parseFloat(response.stats.total_sales).toFixed(2));
-                    } else {
-                        showError('Error al cargar estadísticas: ' + response.message);
-                    }
-                },
-                error: function () {
-                    showError('Error de conexión al cargar estadísticas');
-                    // Restaurar valores por defecto
-                    $('#total-orders').text('0');
-                    $('#completed-orders').text('0');
-                    $('#pending-orders').text('0');
-                    $('#total-sales').text('S/ 0.00');
-                }
-            });
-        }
-
-        function loadRecentOrders() {
-            // Mostrar indicador de carga en la tabla
-            $('#recentOrdersTableBody').html(`
-                <tr>
-                    <td colspan="7" class="text-center">
-                        <div class="dashboard-loading">
-                            <div class="loading-spinner"></div>
-                        </div>
-                    </td>
-                </tr>
-            `);
-
-            $.ajax({
-                url: '{% url "apps.sales:recent_orders" %}',
-                method: 'GET',
-                success: function (response) {
-                    if (response.success) {
-                        renderRecentOrdersTable(response.orders);
-                    } else {
-                        showError('Error al cargar órdenes recientes: ' + response.message);
-                    }
-                },
-                error: function () {
-                    showError('Error de conexión al cargar órdenes recientes');
-                    $('#recentOrdersTableBody').html(`
-                        <tr>
-                            <td colspan="7" class="text-center text-danger">
-                                <i class="fas fa-exclamation-triangle fa-2x mb-2"></i>
-                                <br>Error al cargar datos
-                            </td>
-                        </tr>
-                    `);
-                }
-            });
-        }
 
         function renderRecentOrdersTable(orders) {
             const tbody = $('#recentOrdersTableBody');
@@ -1655,43 +1589,9 @@
             loadWeeklyOrdersChart();
         }
 
-        function loadMonthlyOrdersChart() {
-            $.ajax({
-                url: '{% url "apps.sales:monthly_orders_chart" %}',
-                method: 'GET',
-                success: function (response) {
-                    if (response.success) {
-                        renderMonthlyChart(response.data);
-                    } else {
-                        showError('Error al cargar gráfico mensual: ' + response.message);
-                        renderEmptyChart('monthlyOrdersChart', 'Error al cargar datos');
-                    }
-                },
-                error: function () {
-                    showError('Error de conexión al cargar gráfico mensual');
-                    renderEmptyChart('monthlyOrdersChart', 'Sin conexión');
-                }
-            });
-        }
 
-        function loadWeeklyOrdersChart() {
-            $.ajax({
-                url: '{% url "apps.sales:weekly_orders_chart" %}',
-                method: 'GET',
-                success: function (response) {
-                    if (response.success) {
-                        renderWeeklyChart(response.data);
-                    } else {
-                        showError('Error al cargar gráfico semanal: ' + response.message);
-                        renderEmptyChart('weeklyOrdersChart', 'Error al cargar datos');
-                    }
-                },
-                error: function () {
-                    showError('Error de conexión al cargar gráfico semanal');
-                    renderEmptyChart('weeklyOrdersChart', 'Sin conexión');
-                }
-            });
-        }
+
+
 
         function renderMonthlyChart(data) {
             const ctx = document.getElementById('monthlyOrdersChart').getContext('2d');
@@ -1842,15 +1742,6 @@
             ctx2d.fillText(message, canvas.width / 2, canvas.height / 2);
         }
 
-        function viewOrderDetail(orderId) {
-            // Implementar vista de detalle de orden
-            window.open(`{% url 'apps.sales:order_list' %}?order_id=${orderId}`, '_blank');
-        }
-
-        function editOrder(orderId) {
-            // Implementar edición de orden
-            window.open(`{% url 'apps.sales:order_list' %}?edit_order=${orderId}`, '_blank');
-        }
 
         // Función para mostrar errores
         function showError(message) {
